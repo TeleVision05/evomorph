@@ -95,4 +95,7 @@ genes keep their length; mutate them element-wise.
 ## Media
 
 `docs/media/` holds a still (`.png`), a contact sheet (`_sheet.png`) and an mp4 for
-the two reference creatures and the best random genomes of a 300-genome sweep.
+the two reference creatures and for `rnd0-0276`, the best of the 300-genome seed-0
+sweep (a hexapod on short soles, alternating gait, 1.98 m in 10 s). Its genome is
+`docs/media/rnd0-0276.json`; re-render with
+`scripts/render_media.py --no-references docs/media/rnd0-0276.json`.
