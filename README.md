@@ -12,12 +12,16 @@ It was built to answer one question, and to be able to answer it with "no":
 > **Does evolving morphology and controller together give more robust and more
 > behaviourally diverse locomotion than evolving a controller for a fixed body?**
 
-<!-- RESULTS-HEADLINE -->
+**Status.** The engine, terrains, comparison experiment and dashboard are
+built and tested. The full comparison experiment (4 conditions x 5 seeds) has
+**not finished**, so this repository makes no claim yet about whether joint
+evolution beats the alternatives. What exists today is described under
+[Research results](#research-results).
 
-[![Champions of one joint-evolution run, generation 0 to the last](docs/media/hero/evolution.jpg)](docs/media/hero/evolution.mp4)
+[![A quick-run GA champion walking](docs/media/evolution/ga_champion_sheet.png)](docs/media/evolution/ga_champion.mp4)
 
-*Click for the clip: the champion after each generation of one real run,
-re-simulated from its saved genome (details in [docs/media/hero/NOTES.md](docs/media/hero/NOTES.md)).*
+*One quick-run champion (single seed, `configs/quick.yaml`), re-simulated from
+its saved genome. Click for the clip.*
 
 ## Contents
 
@@ -55,10 +59,27 @@ and counted as skipped, when no OpenGL context can be made.
 
 ## Commands
 
-The brief's command list (section 13), each run in this repository with its
-real output (trimmed where marked).
+Everything is `.venv/bin/python -m evomorph <command>`; `--help` on any command
+lists its options. Runs write to `results/` (not committed).
 
-<!-- COMMANDS -->
+| command | what it does |
+|---|---|
+| `random --n 5 --seed 0 --out DIR` | write seeded random genomes as JSON |
+| `inspect --genome G.json --png out.png` | describe and validate a genome, render its rest pose (`--reference hexapod\|quadruped`, `--save`, `--view` for the interactive viewer) |
+| `evaluate --genome G.json --video out.mp4` | simulate a genome: metrics table, fitness terms, optional video (`--friction`, `--config`) |
+| `evolve --config configs/quick.yaml` | one search run; `--algorithm map_elites`, `--mode controller\|morphology`, `--no-diversity`, `--budget`, `--seed`, `--workers` |
+| `experiment --type comparison` | the A-D comparison, resumable (`--quick` for a smoke test, `--seeds`, `--budget`, `--workers`) |
+| `analyze --run DIR` | plots, statistics and `summary.md` for a run or an experiment folder |
+| `robustness --genome G.json --suite test` | score one genome across a terrain suite (`--list` shows the suites) |
+
+```bash
+.venv/bin/python -m evomorph evolve --config configs/quick.yaml --name demo   # roughly 6-12 min
+.venv/bin/python -m evomorph analyze --run results/demo
+.venv/bin/streamlit run evomorph/visualization/dashboard.py
+```
+
+The interactive viewer (`inspect --view`) uses the blocking `mujoco.viewer.launch`,
+which runs under the plain venv python on macOS.
 
 ## Architecture
 
@@ -99,14 +120,15 @@ How a creature is made and scored:
    physics step. Energy, contacts, slip and airborne time are integrated at
    every physics step; guards reject non-finite states, runaway speed or spin,
    launches and tunnelling.
-5. **Evolution** scores every genome on all 11 training environments (11
-   simulations per genome), so every elite and archive cell carries an
-   11-run score rather than one lucky run. Budgets are counted in simulations.
+5. **Evolution** scores every genome on several runs, not one: the quick config
+   uses 3 flat-ground runs per genome, the comparison experiment uses all 11
+   training environments (11 simulations per genome). Budgets are counted in
+   simulations (genomes x runs).
 
 Design documents: [docs/EVOLUTION.md](docs/EVOLUTION.md) (engine),
 [docs/TERRAINS.md](docs/TERRAINS.md) (terrains and suites),
 [docs/EXPERIMENT.md](docs/EXPERIMENT.md) (the comparison design),
-[docs/DASHBOARD.md](docs/DASHBOARD.md), [docs/RESULTS.md](docs/RESULTS.md),
+[docs/DASHBOARD.md](docs/DASHBOARD.md),
 and the original brief [docs/SPEC.md](docs/SPEC.md).
 
 ## The fitness function
@@ -150,7 +172,17 @@ reference creatures, never on evolved champions (`evomorph/simulation/fitness.py
 
 ## Research results
 
-<!-- RESULTS -->
+What exists, and what it supports:
+
+| result | scale | where | what it shows |
+|---|---|---|---|
+| **Quick runs** (GA, MAP-Elites, GA without diversity) | 1 seed each, 6000 simulations, flat ground | [docs/EVOLUTION.md](docs/EVOLUTION.md) | The engine works: the GA's best fitness rose from +0.32 to +1.02 (about 0.65 m/s) and MAP-Elites filled 62% of its archive. One seed each, so no algorithm ranking; with diversity off the GA found the better walker on this seed. |
+| **Quick comparison** (conditions A-D) | 2 seeds x 4 conditions, 660 simulations per run | [docs/EXPERIMENT.md](docs/EXPERIMENT.md), `docs/media/experiment/quick/` | A smoke test of the pipeline. The computed verdict is "NOT SHOWN" (with 2 seeds the smallest possible p is 0.33). Most champions are worse than the hand-designed quadruped. |
+| **Terrain suites and reference creatures** | 300 random genomes plus two hand-built references | [docs/TERRAINS.md](docs/TERRAINS.md), `docs/validation/` | Calibration of the fitness and the terrain suites. |
+| **Full comparison** (5 seeds x 4 conditions, 1441 simulations per run) | planned 20 runs | `configs/comparison.yaml` | **Unfinished: no result is reported.** |
+
+All numbers above are from quick or partial runs and must be read as such.
+
 
 ## Dashboard
 
@@ -177,11 +209,36 @@ The screenshots show two quick single-seed runs (`configs/quick.yaml`,
 
 ## Limits and known issues
 
-<!-- LIMITS -->
+- **No conclusion on the research question yet.** The full comparison has not
+  finished; the quick comparison used 2 seeds and 60 genomes per run, far too
+  little search (see [docs/EXPERIMENT.md](docs/EXPERIMENT.md)).
+- **Fast creatures skate.** The fitness charges foot slip, but the fastest
+  evolved gaits still slide while loaded (docs/EVOLUTION.md, docs/EXPERIMENT.md).
+- **Reproducibility is per platform.** Runs are bit-identical across processes
+  and worker counts within one MuJoCo version on one CPU architecture; across
+  architectures the last bits can differ (a re-simulated fitness differed by
+  3.4e-15 between macOS arm64 and Linux x86-64), so the dashboard and tests
+  compare re-simulated fitness within a stated tolerance
+  ([docs/DASHBOARD.md](docs/DASHBOARD.md)).
+- **CPU only, at most 6 worker processes.**
+- Further limits: [docs/EXPERIMENT.md](docs/EXPERIMENT.md#limitations),
+  [docs/TERRAINS.md](docs/TERRAINS.md).
+
 
 ## Reproduce everything
 
-<!-- REPRODUCE -->
+```bash
+.venv/bin/python -m pytest -q                                               # tests
+.venv/bin/python -m evomorph evolve --config configs/quick.yaml             # quick GA run
+.venv/bin/python -m evomorph evolve --config configs/quick.yaml --algorithm map_elites
+.venv/bin/python -m evomorph experiment --type comparison --quick           # smoke-sized comparison (about 26 min measured)
+.venv/bin/python -m evomorph experiment --type comparison                   # the full design, many hours; re-run the same command to resume
+.venv/bin/python -m evomorph analyze --run results/experiments/comparison
+```
+
+The full comparison is resumable: finished runs are skipped, and a run
+interrupted mid-search is set aside under `incomplete/` and redone.
+
 
 ## License
 
