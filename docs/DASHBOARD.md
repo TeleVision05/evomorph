@@ -86,8 +86,21 @@ test_rebuilt_archive_matches_saved_archive`).
   environment (spawn seed 0, as `render_views` does).
 * **Clips** re-simulate the first evaluation run (its environment and spawn seed, the run's
   sim and fitness config) and record it at 480x360. The inspector prints the re-simulated
-  fitness next to the stored one; on the fixture runs and both quick runs below they are
-  identical (`tests/test_dashboard_data.py::test_clip_is_a_real_resimulation`).
+  fitness next to the stored one and their difference (see Reproducibility below).
+* **Reproducibility of the clip's fitness** (measured 2026-11-13, MuJoCo 4.0.1, numpy 2.5.4):
+
+  | where the clip is re-simulated | difference from the stored fitness | the inspector shows |
+  |---|---|---|
+  | the machine that ran the evolution | 0, bit-identical (recording a clip does not change the physics) | a match |
+  | another CPU architecture (fixture made on macOS arm64, re-simulated on Linux x86-64 CI) | last bits only: 0.6820907558843688 vs 0.6820907558843654, 3.4e-15 | a match |
+  | a genuinely different simulation (other seed, genome, environment or settings) | 1.2e-3 or more (smallest seed-to-seed gap in the fixtures) | a warning: MISMATCH |
+
+  A match means within `RESIM_TOLERANCE` = 1e-9 (relative to the fitness, absolute below 1;
+  `evomorph/visualization/dashboard_media.py`), which sits about six orders of magnitude
+  from both the cross-architecture noise and the smallest real difference. The tests
+  (`tests/test_dashboard_data.py::test_clip_is_a_real_resimulation`,
+  `test_resim_check_tolerates_last_bits_but_not_a_different_simulation`) use the same
+  constant, so they pass on any CPU but still fail on a re-simulation that really differs.
 * **Clips play in real time.** The evaluator keeps every `round(control_rate / fps)`-th
   control step as a frame, so asking for 30 fps at the 50 Hz control rate really captures
   25 frames per simulated second. The dashboard writes its clips at that true rate (25 fps),

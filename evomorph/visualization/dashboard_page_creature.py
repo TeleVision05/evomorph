@@ -133,14 +133,15 @@ def _clip(ctx: Ctx, rec: dict[str, Any]) -> None:
     meta = media.clip_meta(path) or {}
     stored = (rec.get("seed_fitness") or [None])[0]
     again = meta.get("fitness")
-    same = isinstance(stored, float) and again == stored
-    st.caption(
-        f"Clip of the first evaluation run ({label}), re-simulated from the genome: "
-        f"fitness {again:+.4f} vs stored {stored:+.4f}"
-        + (" (identical)." if same else " (different: see docs/DASHBOARD.md).")
-        if isinstance(again, float) and isinstance(stored, float)
-        else "Clip re-simulated from the genome."
-    )
+    if not (isinstance(again, float) and isinstance(stored, float)):
+        st.caption("Clip re-simulated from the genome.")
+        return
+    check = media.ResimCheck(stored=stored, again=again)
+    text = f"Clip of the first evaluation run ({label}): {check.describe()}"
+    if check.matches:
+        st.caption(text)
+    else:
+        st.warning(text)
 
 
 def _viewer(ctx: Ctx, rec: dict[str, Any]) -> None:

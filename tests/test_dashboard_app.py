@@ -14,6 +14,9 @@ import pytest
 from dashboard_helpers import APP, RUN_NAMES, copy_runs, make_in_progress
 from streamlit.testing.v1 import AppTest
 
+from evomorph.visualization import dashboard_data as dd
+from evomorph.visualization import dashboard_media as media
+
 SECTIONS = (
     "Evolution viewer",
     "Creature inspection",
@@ -82,7 +85,31 @@ def test_clip_button_renders_a_real_clip(monkeypatch, results, tmp_path):
     at.button(key="clip_button").click().run()
     _clean(at)
     assert len(at.get("video")) == 1
-    assert any("(identical)" in c.value for c in at.caption)  # re-simulation matches
+    assert any("a match (within" in c.value for c in at.caption)  # re-simulation matches
+    assert not at.warning
+
+
+def test_clip_with_a_different_fitness_is_shown_as_a_mismatch(monkeypatch, results, tmp_path):
+    """A clip whose re-simulation scored differently is flagged, not captioned as a match.
+
+    The clip and its side-car JSON are written straight into the cache, so no
+    rendering is needed: the page only reads them back."""
+    at = _open(_app(monkeypatch, results, tmp_path), "ga_tiny", "Creature inspection")
+    rec = json.loads((results / "ga_tiny" / "best_result.json").read_text())
+    entry = next(e for e in dd.discover_runs(results) if e.name == "ga_tiny")
+    run = dd.load_run(entry)
+    env, seed = run.eval_runs[0]
+    target = media.Target(rec["genome"], env, seed, run.config["sim"], run.config["fitness"])
+    path = media.media_path(tmp_path, target, "clip")
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b"\x00" * 64)
+    wrong = rec["seed_fitness"][0] + 0.01
+    path.with_suffix(".json").write_text(json.dumps({"fitness": wrong}))
+    at.run()
+    _clean(at)
+    assert len(at.get("video")) == 1
+    assert any("MISMATCH" in w.value for w in at.warning)
+    assert not any("a match" in c.value for c in at.caption)
 
 
 def test_selecting_an_archive_cell_opens_that_elite(monkeypatch, results, cache_dir):

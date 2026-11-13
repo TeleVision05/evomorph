@@ -138,7 +138,10 @@ def test_clip_is_a_real_resimulation(tmp_path):
     assert report.errors == []
     path = media.cached(tmp_path, t, "clip")
     assert path is not None and path.stat().st_size > 10_000
-    assert media.clip_meta(path)["fitness"] == rec["seed_fitness"][0]
+    # Bit-identical on the machine that made the fixture; last bits differ on other
+    # CPU architectures, so the check is the dashboard's own tolerance.
+    check = media.ResimCheck(rec["seed_fitness"][0], media.clip_meta(path)["fitness"])
+    assert check.matches, check.describe()
     # The clip plays in real time: its length is the simulated settle + run time.
     import imageio.v2 as imageio
 
@@ -146,6 +149,21 @@ def test_clip_is_a_real_resimulation(tmp_path):
     seconds = reader.count_frames() / reader.get_meta_data()["fps"]
     sim = run.sim
     assert seconds == pytest.approx(sim.settle_time + sim.duration, abs=0.1)
+
+
+def test_resim_check_tolerates_last_bits_but_not_a_different_simulation():
+    stored = 0.6820907558843654  # the ga_tiny champion, stored on macOS arm64
+    same = media.ResimCheck(stored, stored)
+    assert same.matches and same.difference == 0.0
+    linux = media.ResimCheck(stored, 0.6820907558843688)  # measured on Linux x86-64 CI
+    assert linux.matches and "a match" in linux.describe()
+    # The smallest real difference between two simulations in the fixtures is 1.2e-3.
+    other = media.ResimCheck(stored, stored + 1e-3)
+    assert not other.matches and "MISMATCH" in other.describe()
+    # Just past the tolerance is already a mismatch; the tolerance is relative above 1.
+    assert not media.ResimCheck(stored, stored + 2 * media.RESIM_TOLERANCE).matches
+    assert media.ResimCheck(100.0, 100.0 + 50 * media.RESIM_TOLERANCE).matches
+    assert not media.ResimCheck(-100.0, -100.0 - 200 * media.RESIM_TOLERANCE).matches
 
 
 def test_viewer_command_is_built_but_never_launched(monkeypatch, tmp_path):
