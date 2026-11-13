@@ -9,8 +9,16 @@ Limb pairs sit on the torso's side walls at mid-height, evenly spaced front
 (pair 0) to back and mirrored across the sagittal (x-z) plane. Each limb is::
 
     torso -> thigh_<tag>  (hinge hip_<tag>)   capsule along d_upper
-          -> shin_<tag>   (hinge knee_<tag>)  capsule along d_lower, foot sphere at its end
+          -> shin_<tag>   (hinge knee_<tag>)  capsule along d_lower, foot at its end
     (one-segment limbs: no shin; the foot sits at the end of the thigh)
+
+The foot is a sphere of ``foot_radius``, or a fore-aft capsule sole of that
+radius when ``foot_length`` is long enough (``sole_length`` caps it so that
+neighbouring feet never overlap at rest). A biped needs the sole: its two point
+feet share one x, a line of support that tips like a seesaw (measured: 150/150
+random point-foot bipeds fall even standing still; 133/150 stand with a 12 cm
+sole, 2026-11-13). Short, steep thighs get a small hip standoff
+(``hip_standoff``) so the shin starts outside the torso wall.
 
 ``d_upper`` points outward and down by ``hip_splay``; ``d_lower`` outward and down
 by ``lower_splay``. All body frames are axis-aligned with the torso, so joint axes
@@ -30,10 +38,13 @@ bitmasks in ``environment.py``), because with self-collision off evolution found
 long-legged creatures that swept front and rear legs straight through each other
 (measured in the first 300-genome sweep, 2026-11-13). Two exceptions: MuJoCo's
 built-in parent-child filter (a thigh never collides with the torso it hangs
-from, nor a shin with its own thigh), and any body pair that already
+from, nor a shin with its own thigh), and any body pair that still
 interpenetrates at the rest pose, which ``build_mjcf`` detects with MuJoCo's own
 collision pass and excludes, treating it as fused by design rather than letting
-the overlap explode at spawn. Every creature geom collides with the terrain;
+the overlap explode at spawn. After the hip standoff and sole cap, that only
+happens for thick legs crowded on a short torso (adjacent legs on one side);
+the count is reported as the ``rest_exclusions`` metric. Every creature geom
+collides with the terrain;
 only feet count as "foot contacts", and torso contact is how falls are detected.
 
 Mass: geom densities (``TORSO_DENSITY``, ``LIMB_DENSITY``) times the mass-scale
@@ -52,7 +63,7 @@ from dataclasses import dataclass
 import mujoco
 import numpy as np
 
-from evomorph.morphology.genome import Genome
+from evomorph.morphology.genome import MIN_SOLE_LENGTH, Genome
 from evomorph.simulation.environment import (
     CREATURE_CONAFFINITY,
     CREATURE_CONTYPE,
@@ -162,14 +173,49 @@ def limb_geometry(genome: Genome, pair: int, side: int) -> dict[str, np.ndarray]
     # Hips span 85% of the torso so the outer pairs sit just inside its ends.
     frac = 1.0 - 2.0 * pair / (m.n_pairs - 1) if m.n_pairs > 1 else 0.0
     x = 0.5 * m.torso_length * 0.85 * frac
-    hip = np.array([x, sgn * 0.5 * m.torso_width, 0.0])
     th, ph, ps = (math.radians(a) for a in (m.hip_splay, m.lower_splay, m.hip_axis_tilt))
+    hip = np.array([x, sgn * (0.5 * m.torso_width + hip_standoff(genome)), 0.0])
     d_up = np.array([0.0, sgn * math.cos(th), -math.sin(th)])
     d_low = np.array([0.0, sgn * math.cos(ph), -math.sin(ph)])
     x_hat = np.array([1.0, 0.0, 0.0])
     hip_axis = _unit(math.cos(ps) * _unit(np.cross(d_up, x_hat)) + sgn * math.sin(ps) * x_hat)
     knee_axis = sgn * x_hat
     return {"hip": hip, "d_up": d_up, "d_low": d_low, "hip_axis": hip_axis, "knee_axis": knee_axis}
+
+
+def hip_standoff(genome: Genome) -> float:
+    """Outward offset (m) of the hip from the torso wall; 0 for most bodies.
+
+    A two-segment limb whose thigh reaches less than one limb radius sideways
+    (short and steep) would start its shin inside the torso. The hip is then
+    mounted on a short bracket just far enough out (plus 2 mm) that the shin
+    clears the wall at rest, instead of excluding the shin-torso pair from
+    collision for the whole run.
+    """
+    m = genome.morphology
+    if m.n_segments != 2:
+        return 0.0
+    sideways = m.upper_limb_length * math.cos(math.radians(m.hip_splay))
+    return max(0.0, m.limb_thickness + 0.002 - sideways)
+
+
+def sole_length(genome: Genome) -> float:
+    """Built sole length (m): ``foot_length`` capped so neighbouring feet do not overlap.
+
+    Feet of one side sit at their hip's x at rest, spaced ``0.85 L / (n_pairs-1)``
+    apart; a sole is shortened to leave a 4 mm gap to the next foot, and below
+    ``MIN_SOLE_LENGTH`` the foot is a sphere (returns 0).
+    """
+    m = genome.morphology
+    length = m.foot_length
+    if m.n_pairs > 1:
+        spacing = 0.85 * m.torso_length / (m.n_pairs - 1)
+        length = min(length, spacing - 2.0 * m.foot_radius - 0.004)
+    return length if length >= MIN_SOLE_LENGTH else 0.0
+
+
+def has_sole(genome: Genome) -> bool:
+    return sole_length(genome) > 0.0
 
 
 def _capsule_mass(radius: float, length: float, density: float) -> float:
@@ -184,7 +230,7 @@ def estimate_mass(genome: Genome) -> float:
     per_limb = _capsule_mass(m.limb_thickness, m.upper_limb_length, rho)
     if m.n_segments == 2:
         per_limb += _capsule_mass(m.limb_thickness, m.lower_limb_length, rho)
-    per_limb += rho * 4.0 / 3.0 * math.pi * m.foot_radius**3
+    per_limb += _capsule_mass(m.foot_radius, sole_length(genome), rho)
     return torso + m.n_limbs * per_limb
 
 
@@ -208,11 +254,26 @@ def _v(a: np.ndarray) -> str:
     return " ".join(f"{float(x):.6g}" for x in a)
 
 
+def _foot_xml(genome: Genome, tag: str, centre: np.ndarray, indent: str) -> str:
+    """A sphere foot, or a fore-aft capsule sole when ``foot_length`` is long enough."""
+    m = genome.morphology
+    if not has_sole(genome):
+        return (
+            f'{indent}<geom name="foot_{tag}" type="sphere" size="{m.foot_radius:.6g}" '
+            f'pos="{_v(centre)}" class="foot"/>'
+        )
+    half = np.array([0.5 * sole_length(genome), 0.0, 0.0])
+    return (
+        f'{indent}<geom name="foot_{tag}" type="capsule" size="{m.foot_radius:.6g}" '
+        f'fromto="{_v(centre - half)} {_v(centre + half)}" class="foot"/>'
+    )
+
+
 def _limb_xml(genome: Genome, pair: int, side: int) -> str:
     m = genome.morphology
     g = limb_geometry(genome, pair, side)
     tag = limb_tag(pair, side)
-    r, fr = m.limb_thickness, m.foot_radius
+    r = m.limb_thickness
     hip_r, knee_r = math.radians(m.hip_range), math.radians(m.knee_range)
     upper_end = g["d_up"] * m.upper_limb_length
     lines = [
@@ -230,15 +291,11 @@ def _limb_xml(genome: Genome, pair: int, side: int) -> str:
             f'range="{-knee_r:.6g} {knee_r:.6g}"/>',
             f'          <geom name="shin_{tag}_geom" type="capsule" size="{r:.6g}" '
             f'fromto="0 0 0 {_v(lower_end)}" class="limb"/>',
-            f'          <geom name="foot_{tag}" type="sphere" size="{fr:.6g}" '
-            f'pos="{_v(lower_end)}" class="foot"/>',
+            _foot_xml(genome, tag, lower_end, "          "),
             "        </body>",
         ]
     else:
-        lines.append(
-            f'        <geom name="foot_{tag}" type="sphere" size="{fr:.6g}" '
-            f'pos="{_v(upper_end)}" class="foot"/>'
-        )
+        lines.append(_foot_xml(genome, tag, upper_end, "        "))
     lines.append("      </body>")
     return "\n".join(lines)
 

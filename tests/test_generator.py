@@ -12,7 +12,9 @@ from evomorph.morphology.generator import (
     build_mjcf,
     describe_layout,
     estimate_mass,
+    hip_standoff,
     limb_tag,
+    sole_length,
 )
 from evomorph.morphology.genome import random_genome, reference_quadruped
 from evomorph.morphology.validator import ModelCompileError, compile_model
@@ -140,6 +142,42 @@ def test_rest_pose_overlaps_are_excluded_not_exploded() -> None:
     body = build_body(g, EnvSpec(), sim)
     spawn(body, sim, make_rng(0))
     settle(body, sim, None)  # raises SimulationGlitchError if overlaps exploded
+
+
+def _exclusions(xml: str) -> list[str]:
+    return [line for line in xml.splitlines() if "<exclude" in line]
+
+
+def test_short_steep_thigh_gets_a_standoff_instead_of_a_torso_exclusion() -> None:
+    """Review case tv424242-0649: shins sat ~3 cm inside the torso for the whole run."""
+    g = configured_genome(2, 2, upper_limb_length=0.05, hip_splay=80.0, limb_thickness=0.033)
+    assert hip_standoff(g) > 0.02
+    assert not _exclusions(build_mjcf(g))
+    assert hip_standoff(reference_quadruped()) == 0.0  # ordinary bodies are untouched
+
+
+def test_sole_is_a_fore_aft_capsule_with_its_own_mass() -> None:
+    point = configured_genome(1, 2, foot_length=0.0)
+    sole = configured_genome(1, 2, foot_length=0.12)
+    model = compile_model(build_mjcf(sole))
+    gid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, "foot_0L")
+    assert model.geom_type[gid] == mujoco.mjtGeom.mjGEOM_CAPSULE
+    assert model.geom_size[gid][1] == pytest.approx(0.06)  # half-length along the capsule
+    data = mujoco.MjData(model)
+    mujoco.mj_forward(model, data)
+    assert abs(data.geom_xmat[gid].reshape(3, 3)[0, 2]) == pytest.approx(1.0)  # axis along x
+    assert float(model.body_subtreemass[1]) == pytest.approx(estimate_mass(sole), rel=1e-3)
+    assert estimate_mass(sole) > estimate_mass(point)
+    assert 'type="sphere"' in build_mjcf(point).split('name="foot_0L"')[1].split("/>")[0]
+
+
+def test_sole_is_capped_so_neighbouring_feet_never_overlap() -> None:
+    crowded = configured_genome(4, 2, torso_length=0.3, foot_length=0.15, foot_radius=0.02)
+    spacing = 0.85 * 0.3 / 3
+    assert sole_length(crowded) == pytest.approx(spacing - 0.04 - 0.004)
+    assert not any("foot" in e for e in _exclusions(build_mjcf(crowded)))
+    tiny = configured_genome(4, 2, torso_length=0.15, foot_length=0.15, foot_radius=0.02)
+    assert sole_length(tiny) == 0.0  # no room: point feet
 
 
 def test_random_genomes_always_compile(rng) -> None:

@@ -24,6 +24,7 @@ from evomorph.utils.serialization import dump_json, load_json
 
 GAITS: tuple[str, ...] = ("alternating", "diagonal", "tripod", "metachronal")
 CONTROLLER_KINDS: tuple[str, ...] = ("cpg",)
+MIN_SOLE_LENGTH = 0.01  # m; shorter foot_length values build a sphere (point) foot
 
 
 @dataclass(frozen=True)
@@ -73,6 +74,11 @@ GENE_BOUNDS: dict[str, GeneBound] = {
     "lower_limb_length": _f(_M, 0.05, 0.35),  # same envelope for the shank
     "limb_thickness": _f(_M, 0.010, 0.035),  # capsule radius: wire-thin to stout
     "foot_radius": _f(_M, 0.015, 0.050),  # contact sphere: point foot to pad
+    # Sole length along the body axis (m). Below MIN_SOLE_LENGTH the foot is a
+    # sphere; above, a capsule of radius foot_radius lying fore-aft. Two mirrored
+    # point feet share one x, so a biped's support is a line and it pitches over
+    # like a seesaw; a sole gives it an area. 0.15 m is a long plantigrade foot.
+    "foot_length": _f(_M, 0.0, 0.15),
     "limb_mass_scale": _f(_M, 0.5, 2.0),  # x 1200 kg/m^3 (motors + tube): light to heavy legs
     # --- morphology: posture and joints (deg) -----------------------------
     # Upper segment angle below horizontal: 0 = sprawled (ant/lizard), 80 = nearly
@@ -120,6 +126,7 @@ class MorphologyGenes:
     lower_limb_length: float = 0.20
     limb_thickness: float = 0.02
     foot_radius: float = 0.025
+    foot_length: float = 0.0  # point (sphere) foot; JSON saved before this gene loads as 0
     limb_mass_scale: float = 1.0
     hip_splay: float = 10.0
     lower_splay: float = 60.0
