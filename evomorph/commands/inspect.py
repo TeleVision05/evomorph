@@ -23,7 +23,13 @@ from evomorph.morphology.generator import (
     limb_reach,
     torque_limit,
 )
-from evomorph.morphology.genome import CONTROLLER_GENES, GENE_BOUNDS, MORPHOLOGY_GENES, Genome
+from evomorph.morphology.genome import (
+    CONTROLLER_GENES,
+    GENE_BOUNDS,
+    MORPHOLOGY_GENES,
+    Genome,
+    save_genome,
+)
 from evomorph.morphology.validator import ModelCompileError, compile_model, validate_genome
 
 
@@ -35,23 +41,33 @@ def _fmt(value: object) -> str:
     return str(value)
 
 
-def summary_lines(genome: Genome) -> list[str]:
-    """Human-readable description of a genome (used by inspect and tests)."""
-    m = genome.morphology
+def gene_lines(genome: Genome) -> list[str]:
+    """The raw genes, safe to print even for an invalid genome."""
     lines = [
         f"genome {genome.id}  origin={genome.origin} generation={genome.generation} "
         f"parents={list(genome.parent_ids) or '-'}",
+        "morphology:",
+    ]
+    lines += [f"  {n:<20} {_fmt(getattr(genome.morphology, n, None))}" for n in MORPHOLOGY_GENES]
+    lines.append("controller:")
+    for n in CONTROLLER_GENES:
+        unit = "rad" if GENE_BOUNDS[n].kind == "float" and n != "frequency" else ""
+        lines.append(f"  {n:<20} {_fmt(getattr(genome.controller, n, None))} {unit}".rstrip())
+    return lines
+
+
+def summary_lines(genome: Genome) -> list[str]:
+    """Human-readable description of a *valid* genome (used by inspect and tests)."""
+    m = genome.morphology
+    head, *genes = gene_lines(genome)
+    lines = [
+        head,
         f"body: {genome.n_limbs} limbs ({m.n_pairs} pairs) x {m.n_segments} segment(s) = "
         f"{genome.n_joints} actuated joints; est. mass {estimate_mass(genome):.2f} kg; "
         f"reach {limb_reach(genome):.3f} m; servo limit {torque_limit(genome):.2f} N m",
-        "morphology:",
+        *genes,
     ]
-    lines += [f"  {n:<20} {_fmt(getattr(m, n))}" for n in MORPHOLOGY_GENES]
-    lines.append("controller:")
     c = genome.controller
-    for n in CONTROLLER_GENES:
-        unit = "rad" if GENE_BOUNDS[n].kind == "float" and n != "frequency" else ""
-        lines.append(f"  {n:<20} {_fmt(getattr(c, n))} {unit}".rstrip())
     layout = describe_layout(genome)
     phases = gait_phases(c.gait, m.n_pairs)
     lines.append("limbs (actuator index; base gait phase in degrees):")
@@ -68,11 +84,14 @@ def summary_lines(genome: Genome) -> list[str]:
 def run(args: argparse.Namespace) -> int:
     genome = genome_from_args(args)
     env = env_from_args(args)
-    print("\n".join(summary_lines(genome)))
     check = validate_genome(genome)
     if not check.ok:
+        print("\n".join(gene_lines(genome)))
         print("VALIDATION: invalid\n  " + "\n  ".join(check.errors))
         return 1
+    print("\n".join(summary_lines(genome)))
+    if args.save:
+        print(f"wrote {save_genome(genome, args.save)}")
     try:
         xml = build_mjcf(genome, env)
         model = compile_model(xml)
@@ -105,5 +124,6 @@ def register(subparsers: argparse._SubParsersAction) -> None:
     add_env_args(p)
     p.add_argument("--png", type=Path, help="write iso/side/front/top rest-pose image")
     p.add_argument("--xml", type=Path, help="write the generated MJCF")
+    p.add_argument("--save", type=Path, help="write the genome as JSON (e.g. export a reference)")
     p.add_argument("--view", action="store_true", help="open the interactive MuJoCo viewer")
     p.set_defaults(func=run)

@@ -34,9 +34,19 @@ def add_env_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--seed", type=int, default=0, help="evaluation seed (spawn noise)")
 
 
+class GenomeLoadError(Exception):
+    """A genome file could not be read; the message is meant for the person at the terminal."""
+
+
 def genome_from_args(args: argparse.Namespace) -> Genome:
+    """The genome named on the command line. Raises GenomeLoadError for an unreadable file."""
     if args.genome is not None:
-        return load_genome(args.genome)
+        try:
+            return load_genome(args.genome)
+        except FileNotFoundError:
+            raise GenomeLoadError(f"no genome file at {args.genome}") from None
+        except (OSError, ValueError, TypeError) as exc:  # JSONDecodeError is a ValueError
+            raise GenomeLoadError(f"could not read genome {args.genome}: {exc}") from None
     if args.reference is not None:
         return REFERENCES[args.reference]()
     return random_genome(make_rng(args.random), genome_id=f"rnd-seed{args.random}")

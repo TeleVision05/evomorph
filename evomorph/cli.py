@@ -14,6 +14,7 @@ import pkgutil
 import sys
 
 import evomorph.commands as commands_pkg
+from evomorph.commands._common import GenomeLoadError
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -37,7 +38,11 @@ def main(argv: list[str] | None = None) -> int:
     if not getattr(args, "func", None):
         parser.print_help()
         return 2
-    return int(args.func(args) or 0)
+    try:
+        return int(args.func(args) or 0)
+    except GenomeLoadError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":

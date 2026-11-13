@@ -42,7 +42,10 @@ def run(args: argparse.Namespace) -> int:
 
         spec = RecordSpec(width=args.width, height=args.height, fps=args.fps, include_settle=True)
         result = render_video(genome, args.video, env, sim, fit, seed=args.seed, spec=spec)
-        print(f"wrote {args.video}")
+        if result.frames and Path(args.video).exists():
+            print(f"wrote {args.video}")
+        else:
+            print(f"no video written: the run produced no frames ({result.failure_reason})")
     else:
         result = evaluate(genome, env=env, sim=sim, fitness=fit, seed=args.seed)
     print("\n".join(result_lines(result)))

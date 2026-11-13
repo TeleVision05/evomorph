@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -54,6 +55,41 @@ def test_random_then_inspect_then_evaluate(tmp_path, capsys) -> None:
     code = main(["evaluate", "--reference", "hexapod", "--config", str(cfg), "--json", str(js)])
     text = capsys.readouterr().out
     assert code == 0 and "forward_displacement" in text and js.exists()
+
+
+def test_inspect_reports_an_invalid_genome_without_a_traceback(tmp_path, capsys) -> None:
+    ref = tmp_path / "ref.json"
+    assert main(["inspect", "--reference", "hexapod", "--save", str(ref)]) == 0
+    data = json.loads(ref.read_text())
+    data["controller"]["gait"] = "bogus"
+    bad = tmp_path / "bad_gait.json"
+    bad.write_text(json.dumps(data))
+    capsys.readouterr()
+    assert main(["inspect", "--genome", str(bad)]) == 1
+    out = capsys.readouterr().out
+    assert "VALIDATION: invalid" in out and "gait='bogus'" in out
+    assert main(["inspect", "--genome", str(tmp_path / "missing.json")]) == 2
+    assert "no genome file" in capsys.readouterr().err
+    (tmp_path / "junk.json").write_text("{not json")
+    assert main(["evaluate", "--genome", str(tmp_path / "junk.json")]) == 2
+    assert "could not read genome" in capsys.readouterr().err
+
+
+def test_evaluate_does_not_claim_a_video_it_did_not_write(tmp_path, capsys) -> None:
+    video = tmp_path / "slope.mp4"
+    assert (
+        main(["evaluate", "--reference", "quadruped", "--env", "slope", "--video", str(video)]) == 1
+    )
+    out = capsys.readouterr().out
+    assert "wrote" not in out and "no video written" in out and not video.exists()
+
+
+def test_sim_config_rejects_drifting_control_period_and_zero_duration() -> None:
+    with pytest.raises(ValueError, match="whole number of timesteps"):
+        SimConfig(timestep=0.003, control_rate=50.0)
+    with pytest.raises(ValueError, match="duration"):
+        SimConfig(duration=0.0)
+    assert SimConfig(timestep=0.001).n_substeps == 20
 
 
 def test_inspect_png(tmp_path) -> None:
