@@ -10,3 +10,5 @@ dist/
 results/
 .DS_Store
 MUJOCO_LOG.TXT
+# Dashboard render cache (made when the results folder is not results/)
+.dashboard_cache/

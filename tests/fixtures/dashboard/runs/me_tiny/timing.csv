@@ -1,0 +1,5 @@
+generation,sims,evaluations,wall_seconds,elapsed_seconds
+0,16,8,6.494,6.494
+1,32,8,4.328,10.822
+2,48,8,2.161,12.983
+3,64,8,1.661,14.644

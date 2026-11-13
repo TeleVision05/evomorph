@@ -1,0 +1,643 @@
+{
+  "spec": {
+    "descriptors": [
+      "sustained_velocity",
+      "energy_efficiency"
+    ],
+    "bins": [
+      10,
+      10
+    ],
+    "ranges": [
+      [
+        0.0,
+        0.8
+      ],
+      [
+        0.0,
+        0.7
+      ]
+    ]
+  },
+  "qd_offset": 3.2,
+  "coverage": 0.11,
+  "qd_score": 35.027071066648425,
+  "cells": [
+    {
+      "cell": [
+        0,
+        0
+      ],
+      "genome_file": "elites/cell_00_00.json",
+      "genome_id": "b0000-007",
+      "fitness": -0.2024716656814785,
+      "descriptor": [
+        -0.006473629065906592,
+        0.04602482099166429
+      ],
+      "seed_fitness": [
+        -0.19896565074392997,
+        -0.20597768061902702
+      ],
+      "inserted_at": 16,
+      "metrics": {
+        "forward_displacement": 0.014948239824027237,
+        "avg_forward_velocity": 0.004982746608009079,
+        "sustained_velocity": -0.006473629065906592,
+        "path_length": 0.17647846186328775,
+        "lateral_displacement": 0.0015150198138167029,
+        "max_lateral_deviation": 0.0032906216156874646,
+        "survival_time": 3.0,
+        "survival_fraction": 1.0,
+        "fell": 0.0,
+        "mean_tilt": 0.006391273209676914,
+        "max_tilt": 0.018367732673321563,
+        "upright_score": 0.9959311891041165,
+        "yaw_drift": 0.16508362038072283,
+        "net_yaw": 0.14236751454746588,
+        "energy": 39.66727470181166,
+        "mean_power": 13.222424900603887,
+        "cost_of_transport": 21.576541640444635,
+        "energy_efficiency": 0.04602482099166429,
+        "actuator_effort": 0.5133949563114223,
+        "accel_rms": 3.2497034134967206,
+        "smoothness": 0.7513232690289875,
+        "foot_contact_fraction": 1.0,
+        "airborne_fraction": 0.0006666666666666666,
+        "torso_contact_fraction": 0.0,
+        "nonfoot_contact_fraction": 0.0,
+        "foot_support_fraction": 1.0,
+        "foot_slip_speed": 0.07587823520572012,
+        "slip_fraction": 0.3388013343841526,
+        "max_penetration": 0.002167015785808319,
+        "mean_height": 0.08664650980164718,
+        "max_height_gain": 0.005325522732363523,
+        "peak_speed": 0.2574181492387755,
+        "total_mass": 12.996027076633126,
+        "rest_exclusions": 0.0,
+        "n_joints": 8.0,
+        "n_limbs": 8.0
+      }
+    },
+    {
+      "cell": [
+        0,
+        1
+      ],
+      "genome_file": "elites/cell_00_01.json",
+      "genome_id": "b0001-001",
+      "fitness": -0.20803556622557606,
+      "descriptor": [
+        -0.0022115147525244945,
+        0.07883474690326943
+      ],
+      "seed_fitness": [
+        -0.2137690495909228,
+        -0.20230208286022935
+      ],
+      "inserted_at": 20,
+      "metrics": {
+        "forward_displacement": 0.00011652544525696078,
+        "avg_forward_velocity": 3.884181508565361e-05,
+        "sustained_velocity": -0.0022115147525244945,
+        "path_length": 0.03196191941085849,
+        "lateral_displacement": 0.0022973325747816086,
+        "max_lateral_deviation": 0.0024307205773787576,
+        "survival_time": 3.0,
+        "survival_fraction": 1.0,
+        "fell": 0.0,
+        "mean_tilt": 0.0028187623121455037,
+        "max_tilt": 0.006086318687378007,
+        "upright_score": 0.9982055201784836,
+        "yaw_drift": 0.011219274613852305,
+        "net_yaw": 0.004985856124939292,
+        "energy": 2.3640915770849658,
+        "mean_power": 0.7880305256949885,
+        "cost_of_transport": 1.706170921072368,
+        "energy_efficiency": 0.07883474690326943,
+        "actuator_effort": 0.016578309832214998,
+        "accel_rms": 0.28917737499998447,
+        "smoothness": 0.9714417091705427,
+        "foot_contact_fraction": 1.0,
+        "airborne_fraction": 0.0,
+        "torso_contact_fraction": 0.0,
+        "nonfoot_contact_fraction": 0.0,
+        "foot_support_fraction": 1.0,
+        "foot_slip_speed": 0.006614241592969542,
+        "slip_fraction": 0.007638153967716519,
+        "max_penetration": 0.0005070667376145272,
+        "mean_height": 0.12959672237809552,
+        "max_height_gain": 0.0017764214872080797,
+        "peak_speed": 0.036660540962639446,
+        "total_mass": 14.124489250797032,
+        "rest_exclusions": 0.0,
+        "n_joints": 6.0,
+        "n_limbs": 6.0
+      }
+    },
+    {
+      "cell": [
+        0,
+        2
+      ],
+      "genome_file": "elites/cell_00_02.json",
+      "genome_id": "b0001-007",
+      "fitness": 0.0016236994050334455,
+      "descriptor": [
+        0.0035264010357422613,
+        0.20272743646680963
+      ],
+      "seed_fitness": [
+        0.0024127804646686844,
+        0.0008346183453982068
+      ],
+      "inserted_at": 32,
+      "metrics": {
+        "forward_displacement": 0.1449741251120164,
+        "avg_forward_velocity": 0.04832470837067213,
+        "sustained_velocity": 0.0035264010357422613,
+        "path_length": 0.47714730630857716,
+        "lateral_displacement": 0.049343492692959845,
+        "max_lateral_deviation": 0.05217437402608728,
+        "survival_time": 3.0,
+        "survival_fraction": 1.0,
+        "fell": 0.0,
+        "mean_tilt": 0.03511833100912539,
+        "max_tilt": 0.09125863762502727,
+        "upright_score": 0.9776429761070412,
+        "yaw_drift": 0.2322455145360447,
+        "net_yaw": 0.04953746218575498,
+        "energy": 61.77729622920544,
+        "mean_power": 20.592432076401813,
+        "cost_of_transport": 3.9454860213687253,
+        "energy_efficiency": 0.20272743646680963,
+        "actuator_effort": 0.17819252694696444,
+        "accel_rms": 4.646456501645115,
+        "smoothness": 0.6785918118645841,
+        "foot_contact_fraction": 1.0,
+        "airborne_fraction": 0.0013333333333333333,
+        "torso_contact_fraction": 0.0,
+        "nonfoot_contact_fraction": 0.0,
+        "foot_support_fraction": 1.0,
+        "foot_slip_speed": 0.10132474036670017,
+        "slip_fraction": 0.44132174342033265,
+        "max_penetration": 0.003441877695341662,
+        "mean_height": 0.06555327266731978,
+        "max_height_gain": 0.02050842586871283,
+        "peak_speed": 0.5012942170002554,
+        "total_mass": 11.04949115185437,
+        "rest_exclusions": 0.0,
+        "n_joints": 6.0,
+        "n_limbs": 6.0
+      }
+    },
+    {
+      "cell": [
+        0,
+        3
+      ],
+      "genome_file": "elites/cell_00_03.json",
+      "genome_id": "b0003-004",
+      "fitness": 0.029291574497473195,
+      "descriptor": [
+        0.048006230629994755,
+        0.2413564917035126
+      ],
+      "seed_fitness": [
+        0.024024659422237395,
+        0.034558489572708996
+      ],
+      "inserted_at": 58,
+      "metrics": {
+        "forward_displacement": 0.21883157368782177,
+        "avg_forward_velocity": 0.0729438578959406,
+        "sustained_velocity": 0.048006230629994755,
+        "path_length": 0.3646274507877726,
+        "lateral_displacement": 0.017881581807803245,
+        "max_lateral_deviation": 0.02328949930393585,
+        "survival_time": 3.0,
+        "survival_fraction": 1.0,
+        "fell": 0.0,
+        "mean_tilt": 0.03834367851816559,
+        "max_tilt": 0.09118182268587291,
+        "upright_score": 0.9755896561100297,
+        "yaw_drift": 0.2677806571303501,
+        "net_yaw": 0.15479633381130867,
+        "energy": 55.531144792196955,
+        "mean_power": 18.510381597398982,
+        "cost_of_transport": 3.164235713199025,
+        "energy_efficiency": 0.2413564917035126,
+        "actuator_effort": 0.023837691762380424,
+        "accel_rms": 8.243823067693217,
+        "smoothness": 0.5433757383791289,
+        "foot_contact_fraction": 0.9768211920529801,
+        "airborne_fraction": 0.13033333333333333,
+        "torso_contact_fraction": 0.0,
+        "nonfoot_contact_fraction": 0.0026666666666666666,
+        "foot_support_fraction": 0.9999918816819913,
+        "foot_slip_speed": 0.24862167485943532,
+        "slip_fraction": 0.7298621058546242,
+        "max_penetration": 0.0032788909439182227,
+        "mean_height": 0.26831637178123835,
+        "max_height_gain": 0.020983607338201232,
+        "peak_speed": 0.4955209389758128,
+        "total_mass": 8.1878425409553,
+        "rest_exclusions": 0.0,
+        "n_joints": 2.0,
+        "n_limbs": 2.0
+      }
+    },
+    {
+      "cell": [
+        1,
+        1
+      ],
+      "genome_file": "elites/cell_01_01.json",
+      "genome_id": "b0003-000",
+      "fitness": 0.006241958002639745,
+      "descriptor": [
+        0.10825457028997101,
+        0.13748831970351544
+      ],
+      "seed_fitness": [
+        0.0026400271598733026,
+        0.009843888845406186
+      ],
+      "inserted_at": 50,
+      "metrics": {
+        "forward_displacement": 0.452161869489059,
+        "avg_forward_velocity": 0.15072062316301965,
+        "sustained_velocity": 0.10825457028997101,
+        "path_length": 0.7779969885167198,
+        "lateral_displacement": 0.14942512212271727,
+        "max_lateral_deviation": 0.1976677579805565,
+        "survival_time": 3.0,
+        "survival_fraction": 1.0,
+        "fell": 0.0,
+        "mean_tilt": 0.06983579205097135,
+        "max_tilt": 0.14430405846770128,
+        "upright_score": 0.9555411539614009,
+        "yaw_drift": 1.3315922654520742,
+        "net_yaw": 1.2785751612011307,
+        "energy": 245.90548867399065,
+        "mean_power": 81.96849622466354,
+        "cost_of_transport": 6.29187847512914,
+        "energy_efficiency": 0.13748831970351544,
+        "actuator_effort": 0.09987123354759139,
+        "accel_rms": 11.288976034270839,
+        "smoothness": 0.46505118603721374,
+        "foot_contact_fraction": 0.9867549668874172,
+        "airborne_fraction": 0.089,
+        "torso_contact_fraction": 0.0,
+        "nonfoot_contact_fraction": 0.028666666666666667,
+        "foot_support_fraction": 0.9999795805558234,
+        "foot_slip_speed": 0.42201503864178874,
+        "slip_fraction": 0.8091938448092197,
+        "max_penetration": 0.012633137088050108,
+        "mean_height": 0.282403544350546,
+        "max_height_gain": 0.0334615666815907,
+        "peak_speed": 0.6034333156691533,
+        "total_mass": 8.826811211898855,
+        "rest_exclusions": 0.0,
+        "n_joints": 8.0,
+        "n_limbs": 8.0
+      }
+    },
+    {
+      "cell": [
+        2,
+        1
+      ],
+      "genome_file": "elites/cell_02_01.json",
+      "genome_id": "b0002-006",
+      "fitness": 0.01830168111840648,
+      "descriptor": [
+        0.21239868182421898,
+        0.12630520344823837
+      ],
+      "seed_fitness": [
+        0.0247118018148969,
+        0.011891560421916057
+      ],
+      "inserted_at": 46,
+      "metrics": {
+        "forward_displacement": 0.8017356435759353,
+        "avg_forward_velocity": 0.26724521452531175,
+        "sustained_velocity": 0.21239868182421898,
+        "path_length": 1.0512047104704236,
+        "lateral_displacement": 0.5608471943613579,
+        "max_lateral_deviation": 0.5608471943613579,
+        "survival_time": 3.0,
+        "survival_fraction": 1.0,
+        "fell": 0.0,
+        "mean_tilt": 0.06278313963778434,
+        "max_tilt": 0.15579290662683287,
+        "upright_score": 0.9600310119352716,
+        "yaw_drift": 0.3395209732058122,
+        "net_yaw": -0.16538559905213326,
+        "energy": 1113.1229660828471,
+        "mean_power": 371.0409886942824,
+        "cost_of_transport": 6.934393388716308,
+        "energy_efficiency": 0.12630520344823837,
+        "actuator_effort": 0.3466169240040011,
+        "accel_rms": 8.612519881070893,
+        "smoothness": 0.5333755234136232,
+        "foot_contact_fraction": 1.0,
+        "airborne_fraction": 0.052333333333333336,
+        "torso_contact_fraction": 0.0,
+        "nonfoot_contact_fraction": 0.034666666666666665,
+        "foot_support_fraction": 0.9997008830841112,
+        "foot_slip_speed": 0.3919528469174569,
+        "slip_fraction": 0.7462808577159552,
+        "max_penetration": 0.007769153391282417,
+        "mean_height": 0.2605260984933553,
+        "max_height_gain": 0.045691649267089976,
+        "peak_speed": 0.8308488985580016,
+        "total_mass": 20.448636509778915,
+        "rest_exclusions": 0.0,
+        "n_joints": 12.0,
+        "n_limbs": 6.0
+      }
+    },
+    {
+      "cell": [
+        3,
+        1
+      ],
+      "genome_file": "elites/cell_03_01.json",
+      "genome_id": "b0000-006",
+      "fitness": 0.022782025897414997,
+      "descriptor": [
+        0.3154191004008322,
+        0.1353937654351135
+      ],
+      "seed_fitness": [
+        4.041917700434031e-05,
+        0.04552363261782565
+      ],
+      "inserted_at": 14,
+      "metrics": {
+        "forward_displacement": 1.4856701856718837,
+        "avg_forward_velocity": 0.49522339522396125,
+        "sustained_velocity": 0.3154191004008322,
+        "path_length": 2.209044414704193,
+        "lateral_displacement": 0.8793539120555327,
+        "max_lateral_deviation": 0.8793539120555327,
+        "survival_time": 3.0,
+        "survival_fraction": 1.0,
+        "fell": 0.0,
+        "mean_tilt": 0.061424332828135114,
+        "max_tilt": 0.2748882315019854,
+        "upright_score": 0.9608960552171221,
+        "yaw_drift": 1.6409294577728821,
+        "net_yaw": 1.5370035458026532,
+        "energy": 1405.6548586438194,
+        "mean_power": 468.5516195479398,
+        "cost_of_transport": 7.500549127466107,
+        "energy_efficiency": 0.1353937654351135,
+        "actuator_effort": 0.21194622997351545,
+        "accel_rms": 14.61821387246015,
+        "smoothness": 0.40195317036322353,
+        "foot_contact_fraction": 0.880794701986755,
+        "airborne_fraction": 0.29700000000000004,
+        "torso_contact_fraction": 0.0,
+        "nonfoot_contact_fraction": 0.0,
+        "foot_support_fraction": 1.0,
+        "foot_slip_speed": 0.7399803420489797,
+        "slip_fraction": 0.8618115702477438,
+        "max_penetration": 0.012393944941536839,
+        "mean_height": 0.3030101937176837,
+        "max_height_gain": 0.05662836115290901,
+        "peak_speed": 1.602562617452241,
+        "total_mass": 15.522058715325338,
+        "rest_exclusions": 0.0,
+        "n_joints": 12.0,
+        "n_limbs": 6.0
+      }
+    },
+    {
+      "cell": [
+        4,
+        1
+      ],
+      "genome_file": "elites/cell_04_01.json",
+      "genome_id": "b0002-007",
+      "fitness": 0.01459611647093683,
+      "descriptor": [
+        0.33831843333194966,
+        0.1287396803937202
+      ],
+      "seed_fitness": [
+        0.013787653173208842,
+        0.01540457976866482
+      ],
+      "inserted_at": 48,
+      "metrics": {
+        "forward_displacement": 1.2424494427266581,
+        "avg_forward_velocity": 0.4141498142422194,
+        "sustained_velocity": 0.33831843333194966,
+        "path_length": 1.496190485064258,
+        "lateral_displacement": 0.48750584014195,
+        "max_lateral_deviation": 0.48750584014195,
+        "survival_time": 3.0,
+        "survival_fraction": 1.0,
+        "fell": 0.0,
+        "mean_tilt": 0.03399932107660278,
+        "max_tilt": 0.1422621657792421,
+        "upright_score": 0.9783553599555608,
+        "yaw_drift": 0.8416382538162024,
+        "net_yaw": 0.7249203055542659,
+        "energy": 1280.3019180083547,
+        "mean_power": 426.76730600278484,
+        "cost_of_transport": 6.767636846182306,
+        "energy_efficiency": 0.1287396803937202,
+        "actuator_effort": 0.21765890263787951,
+        "accel_rms": 13.926354962944718,
+        "smoothness": 0.4133436675440177,
+        "foot_contact_fraction": 0.9072847682119205,
+        "airborne_fraction": 0.2653333333333333,
+        "torso_contact_fraction": 0.0,
+        "nonfoot_contact_fraction": 0.0,
+        "foot_support_fraction": 1.0,
+        "foot_slip_speed": 0.8203245034770044,
+        "slip_fraction": 0.8465873420535057,
+        "max_penetration": 0.008564090660148488,
+        "mean_height": 0.3015870972508807,
+        "max_height_gain": 0.02596341919248099,
+        "peak_speed": 1.0623533302598522,
+        "total_mass": 15.522057296172509,
+        "rest_exclusions": 0.0,
+        "n_joints": 12.0,
+        "n_limbs": 6.0
+      }
+    },
+    {
+      "cell": [
+        4,
+        2
+      ],
+      "genome_file": "elites/cell_04_02.json",
+      "genome_id": "b0000-003",
+      "fitness": 0.01741994213276786,
+      "descriptor": [
+        0.34573809094810654,
+        0.1469857985067713
+      ],
+      "seed_fitness": [
+        0.02218116269428804,
+        0.01265872157124768
+      ],
+      "inserted_at": 8,
+      "metrics": {
+        "forward_displacement": 1.4142543472016813,
+        "avg_forward_velocity": 0.4714181157338938,
+        "sustained_velocity": 0.34573809094810654,
+        "path_length": 1.6808029027333187,
+        "lateral_displacement": 0.6914333369782969,
+        "max_lateral_deviation": 0.6914333369782969,
+        "survival_time": 3.0,
+        "survival_fraction": 1.0,
+        "fell": 0.0,
+        "mean_tilt": 0.13385231745439094,
+        "max_tilt": 0.4592417614961399,
+        "upright_score": 0.9147869681313124,
+        "yaw_drift": 0.8835329938638354,
+        "net_yaw": 0.8835329938638354,
+        "energy": 1371.6666263642605,
+        "mean_power": 457.22220878808685,
+        "cost_of_transport": 5.807029976146147,
+        "energy_efficiency": 0.1469857985067713,
+        "actuator_effort": 0.26335431700820766,
+        "accel_rms": 12.634245106525057,
+        "smoothness": 0.4373243913368335,
+        "foot_contact_fraction": 0.9403973509933774,
+        "airborne_fraction": 0.14800000000000002,
+        "torso_contact_fraction": 0.0,
+        "nonfoot_contact_fraction": 0.209,
+        "foot_support_fraction": 0.9939530623140911,
+        "foot_slip_speed": 0.533726963885462,
+        "slip_fraction": 0.797716285824039,
+        "max_penetration": 0.016397633966881618,
+        "mean_height": 0.25669192887910924,
+        "max_height_gain": 0.08065015165225121,
+        "peak_speed": 1.5408369737812593,
+        "total_mass": 17.036134128993172,
+        "rest_exclusions": 0.0,
+        "n_joints": 12.0,
+        "n_limbs": 6.0
+      }
+    },
+    {
+      "cell": [
+        5,
+        2
+      ],
+      "genome_file": "elites/cell_05_02.json",
+      "genome_id": "b0002-002",
+      "fitness": 0.07161705716520445,
+      "descriptor": [
+        0.4158092628494625,
+        0.20235492194593224
+      ],
+      "seed_fitness": [
+        0.0657914708241035,
+        0.07744264350630539
+      ],
+      "inserted_at": 38,
+      "metrics": {
+        "forward_displacement": 1.6963171921520832,
+        "avg_forward_velocity": 0.5654390640506943,
+        "sustained_velocity": 0.4158092628494625,
+        "path_length": 1.804498622813526,
+        "lateral_displacement": 0.4213342018221162,
+        "max_lateral_deviation": 0.4213342018221162,
+        "survival_time": 3.0,
+        "survival_fraction": 1.0,
+        "fell": 0.0,
+        "mean_tilt": 0.1452259226840621,
+        "max_tilt": 0.3758499018754955,
+        "upright_score": 0.9075463061590003,
+        "yaw_drift": 0.4693935683694875,
+        "net_yaw": 0.46820691639597267,
+        "energy": 1117.5267894809729,
+        "mean_power": 372.50892982699094,
+        "cost_of_transport": 3.9418533628537853,
+        "energy_efficiency": 0.20235492194593224,
+        "actuator_effort": 0.24727024431808792,
+        "accel_rms": 11.082571775858955,
+        "smoothness": 0.46994752921486393,
+        "foot_contact_fraction": 0.8841059602649006,
+        "airborne_fraction": 0.18066666666666667,
+        "torso_contact_fraction": 0.0,
+        "nonfoot_contact_fraction": 0.18833333333333335,
+        "foot_support_fraction": 0.9949807907822938,
+        "foot_slip_speed": 0.4748553936809651,
+        "slip_fraction": 0.7993487160505474,
+        "max_penetration": 0.015905745520129414,
+        "mean_height": 0.2308956216280058,
+        "max_height_gain": 0.07442865864094995,
+        "peak_speed": 1.4594380439894854,
+        "total_mass": 17.036130755521977,
+        "rest_exclusions": 0.0,
+        "n_joints": 12.0,
+        "n_limbs": 6.0
+      }
+    },
+    {
+      "cell": [
+        6,
+        2
+      ],
+      "genome_file": "elites/cell_06_02.json",
+      "genome_id": "b0003-005",
+      "fitness": 0.05570424386560206,
+      "descriptor": [
+        0.497092881069225,
+        0.16890723988182021
+      ],
+      "seed_fitness": [
+        0.06621968279005355,
+        0.04518880494115058
+      ],
+      "inserted_at": 60,
+      "metrics": {
+        "forward_displacement": 1.8072031729560267,
+        "avg_forward_velocity": 0.6024010576520089,
+        "sustained_velocity": 0.497092881069225,
+        "path_length": 1.9459409417917093,
+        "lateral_displacement": 0.32224189490768484,
+        "max_lateral_deviation": 0.3244743079760286,
+        "survival_time": 3.0,
+        "survival_fraction": 1.0,
+        "fell": 0.0,
+        "mean_tilt": 0.05936735403873237,
+        "max_tilt": 0.23990970090773167,
+        "upright_score": 0.9622055685857966,
+        "yaw_drift": 0.5177900559860673,
+        "net_yaw": -0.1099520827867433,
+        "energy": 1349.145553980215,
+        "mean_power": 449.7151846600717,
+        "cost_of_transport": 4.926024390703468,
+        "energy_efficiency": 0.16890723988182021,
+        "actuator_effort": 0.20871251225496434,
+        "accel_rms": 13.935730374531072,
+        "smoothness": 0.4138985517076778,
+        "foot_contact_fraction": 0.9006622516556291,
+        "airborne_fraction": 0.278,
+        "torso_contact_fraction": 0.0,
+        "nonfoot_contact_fraction": 0.0,
+        "foot_support_fraction": 1.0,
+        "foot_slip_speed": 0.7661338536624445,
+        "slip_fraction": 0.8639250058697798,
+        "max_penetration": 0.010763564535060227,
+        "mean_height": 0.30270145881990573,
+        "max_height_gain": 0.038240967320305574,
+        "peak_speed": 1.3599616185907881,
+        "total_mass": 15.464711330488669,
+        "rest_exclusions": 0.0,
+        "n_joints": 12.0,
+        "n_limbs": 6.0
+      }
+    }
+  ]
+}

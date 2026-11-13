@@ -1,0 +1,18 @@
+# Streamlit settings for the EVOMORPH research dashboard
+# (streamlit run evomorph/visualization/dashboard.py, from the repository root).
+
+[theme]
+# A dark "lab bench" theme. Chart colours come from
+# evomorph/visualization/dashboard_plots.py, stepped for this dark surface.
+base = "dark"
+primaryColor = "#3ecf9a"
+backgroundColor = "#0e1316"
+secondaryBackgroundColor = "#161d21"
+textColor = "#e4ebe8"
+
+[browser]
+# Do not send usage statistics anywhere.
+gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"

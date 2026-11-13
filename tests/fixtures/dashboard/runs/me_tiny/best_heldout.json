@@ -1,0 +1,133 @@
+{
+  "id": "b0002-002",
+  "parent_ids": [
+    "b0000-003"
+  ],
+  "generation": 2,
+  "origin": "mutation",
+  "status": "heldout",
+  "valid": true,
+  "failure_reason": "",
+  "fitness": 0.04840190596971308,
+  "seed_fitness": [
+    0.049450175799317625,
+    0.04735363614010853
+  ],
+  "run_labels": [
+    "flat_mu0.6/s1000",
+    "flat/s1001"
+  ],
+  "metrics": {
+    "forward_displacement": 1.6548464567468542,
+    "avg_forward_velocity": 0.5516154855822847,
+    "sustained_velocity": 0.3862459697692436,
+    "path_length": 1.7949314057515773,
+    "lateral_displacement": 0.5157445415743961,
+    "max_lateral_deviation": 0.5157445415743961,
+    "survival_time": 3.0,
+    "survival_fraction": 1.0,
+    "fell": 0.0,
+    "mean_tilt": 0.1487398188091289,
+    "max_tilt": 0.40218877326569924,
+    "upright_score": 0.9053092904077371,
+    "yaw_drift": 0.5868804339878054,
+    "net_yaw": 0.5868375438098985,
+    "energy": 1093.5254749127091,
+    "mean_power": 364.5084916375697,
+    "cost_of_transport": 3.954757930004887,
+    "energy_efficiency": 0.20186635014927007,
+    "actuator_effort": 0.2447675667290557,
+    "accel_rms": 11.023038639012814,
+    "smoothness": 0.471233940143381,
+    "foot_contact_fraction": 0.8774834437086092,
+    "airborne_fraction": 0.19633333333333333,
+    "torso_contact_fraction": 0.0,
+    "nonfoot_contact_fraction": 0.19066666666666665,
+    "foot_support_fraction": 0.9960961121862135,
+    "foot_slip_speed": 0.4549479043799679,
+    "slip_fraction": 0.8036268693108031,
+    "max_penetration": 0.014570652233197643,
+    "mean_height": 0.2310362705909509,
+    "max_height_gain": 0.07379895871182529,
+    "peak_speed": 1.5674807979206333,
+    "total_mass": 17.036130755521977,
+    "rest_exclusions": 0.0,
+    "n_joints": 12.0,
+    "n_limbs": 6.0
+  },
+  "fitness_terms": {
+    "progress": 1.9312298488462178,
+    "upright": -0.07839390981444089,
+    "lateral": -0.16766786423787777,
+    "rotation": -0.2716984456839806,
+    "energy": -0.5571253711844892,
+    "slip": -0.2628778952387664,
+    "support": -0.0019714049850593314,
+    "airborne": -0.17725160725728253,
+    "effort": -0.20351583256184147,
+    "smoothness": -0.16232561191276657,
+    "fall": 0.0,
+    "stationary": 0.0
+  },
+  "genome": {
+    "schema": 1,
+    "id": "b0002-002",
+    "parent_ids": [
+      "b0000-003"
+    ],
+    "generation": 2,
+    "origin": "mutation",
+    "morphology": {
+      "n_pairs": 3,
+      "n_segments": 2,
+      "torso_length": 0.19295362287064857,
+      "torso_width": 0.34922152947596263,
+      "torso_height": 0.038002801052052164,
+      "torso_mass_scale": 1.0164649682061877,
+      "upper_limb_length": 0.17908961958435,
+      "lower_limb_length": 0.339818624235221,
+      "limb_thickness": 0.024055796055711426,
+      "foot_radius": 0.024060260760982628,
+      "foot_length": 0.03625135711415174,
+      "limb_mass_scale": 1.8321774809887699,
+      "hip_splay": 7.439236805253406,
+      "lower_splay": 28.096055879293427,
+      "hip_axis_tilt": -14.816847009469567,
+      "hip_range": 53.09799921282763,
+      "knee_range": 51.01588264126241
+    },
+    "controller": {
+      "kind": "cpg",
+      "gait": "metachronal",
+      "frequency": 2.1581171579727276,
+      "hip_amplitude": 0.5044283568055673,
+      "knee_amplitude": 0.25957909298808945,
+      "knee_phase_offset": -0.5472884198690205,
+      "phase_offsets": [
+        0.999406505355064,
+        0.3974317729695308,
+        1.4422349497256044,
+        -0.41027814270560803,
+        0.165283934947938,
+        0.29507158178221604
+      ],
+      "hip_bias": [
+        -0.021962955625549896,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "knee_bias": [
+        -0.0997412307569952,
+        0.0,
+        0.0,
+        0.09729802103058632,
+        0.0,
+        0.0
+      ],
+      "params": []
+    }
+  }
+}
