@@ -44,7 +44,7 @@ def diversity(run: Path, out: Path) -> Path:
     fig, axes = plt.subplots(1, 3, figsize=(13, 3.6))
     panels = (
         ("mean_gene_distance", "Mean gene distance (evolving genes)", "0-1"),
-        ("behaviour_spread", "Behaviour spread (speed x efficiency)", "0-1.4"),
+        ("behaviour_spread", "Behaviour spread (speed x efficiency)", "mean distance (0-1.41)"),
         ("archive_coverage", "Archive coverage", "share of cells"),
     )
     for ax, (col, title, unit) in zip(axes, panels, strict=True):

@@ -208,24 +208,33 @@ def all_comparisons(
     return comps
 
 
-def evidence_note(n_per_condition: Sequence[int]) -> str:
-    """Plain statement of how strong the evidence can be with these seed counts."""
+def evidence_note(n_per_condition: Sequence[int], n_primary: int = 6) -> str:
+    """Plain statement of how strong the evidence can be with these seed counts.
+
+    ``n_primary`` is the size of the Holm family (3 comparisons x 2 primary
+    measures): with complete separation every primary p equals the minimum, and
+    Holm multiplies the smallest by the family size.
+    """
     if not n_per_condition:
         return "No finished runs: there is no evidence either way."
     n = min(n_per_condition)
     pmin = min_two_sided_p(n, n)
+    holm_min = min(1.0, n_primary * pmin)
     text = (
         f"{n} seed{'s' if n != 1 else ''} per condition (smallest group). With {n} vs {n} "
-        f"seeds the smallest p-value a two-sided Mann-Whitney test can give is {pmin:.3g}"
+        f"seeds the smallest p-value a two-sided Mann-Whitney test can give is {pmin:.3g}, "
+        f"and after the Holm correction over the {n_primary} primary tests {holm_min:.3g}"
     )
-    if n < 4:
+    if holm_min >= ALPHA:
         return (
-            text + ", so no comparison can reach p < 0.05: the evidence is WEAK whatever the "
-            "data look like. Treat every difference below as a hint for a larger run, not a result."
+            text + ", so no primary comparison can reach p < 0.05: the evidence is WEAK whatever "
+            "the data look like. Treat every difference below as a hint for a larger run, "
+            "not a result."
         )
     if n < 8:
         return (
-            text + ". Only large effects can be detected with this many seeds; a non-significant "
-            "comparison is not evidence that two conditions are equal."
+            text + ". Only near-complete separation between conditions can be significant with "
+            "this many seeds; a non-significant comparison is not evidence that two conditions "
+            "are equal."
         )
     return text + "."

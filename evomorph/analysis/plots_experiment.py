@@ -82,7 +82,8 @@ def fitness_over_time(data: ExperimentData, out: Path) -> Path:
         ax.set_title(title)
         ax.set_xlabel("simulations used")
         ax.set_ylabel("fitness (dimensionless)")
-    axes[0].legend(loc="lower right")
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="outside lower center", ncol=len(labels))
     fig.suptitle("Training fitness against simulations: median line, band = range over seeds")
     return save(fig, out / "fitness_vs_simulations.png")
 

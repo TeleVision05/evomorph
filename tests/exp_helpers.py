@@ -13,6 +13,7 @@ import copy
 from pathlib import Path
 from typing import Any
 
+import pytest
 import yaml
 
 from evomorph.evolution.settings import RunConfig
@@ -22,10 +23,22 @@ from evomorph.simulation.environment import EnvSpec
 from evomorph.simulation.suites import SUITES
 
 TEST_SUITE = "tiny-held-out"
-SUITES.setdefault(
-    TEST_SUITE,
-    (EnvSpec(kind="friction", friction=0.5), EnvSpec(kind="friction", friction=1.5)),
-)
+
+
+@pytest.fixture(autouse=True, scope="module")
+def tiny_suite():
+    """Register the tests' held-out suite for one test module, then remove it again.
+
+    Only the test modules that import this fixture see it, so suite-wide tests
+    elsewhere (every suite builds, the CLI lists the suites) are unaffected.
+    """
+    SUITES[TEST_SUITE] = (
+        EnvSpec(kind="friction", friction=0.5),
+        EnvSpec(kind="friction", friction=1.5),
+    )
+    yield TEST_SUITE
+    SUITES.pop(TEST_SUITE, None)
+
 
 TINY: dict[str, Any] = {
     "sim": {"duration": 1.0, "settle_time": 0.2},

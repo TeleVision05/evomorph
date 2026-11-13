@@ -54,18 +54,20 @@ RESCORE_TEST_SEED = 2000
 class ExperimentConfig:
     """The ``experiment`` config section (see docs/EXPERIMENT.md for the numbers).
 
-    Defaults are the full run's. ``budget = 4400`` is 400 genomes of 11
-    simulations, the size that fits 4 conditions x 5 seeds into about two and
-    a half hours at the throughput measured for this experiment (see
-    docs/EXPERIMENT.md). ``n_seeds = 5`` because with fewer seeds per condition
-    a rank test cannot reach p < 0.05 at all (the smallest two-sided
-    Mann-Whitney p for 4 vs 4 is 0.029, for 3 vs 3 it is 0.10).
+    Defaults are the full run's (configs/comparison.yaml). ``budget = 1441``
+    is 131 genomes of 11 simulations, what fits 4 conditions x 5 seeds into
+    about two and a half hours at the throughput measured in the quick run
+    (3.89 simulations/s with 6 workers on the shared laptop; computed by
+    scripts/plan_budget.py). ``n_seeds = 5`` because it is the fewest seeds
+    with which a primary comparison can pass the Holm correction at all: the
+    smallest two-sided Mann-Whitney p is 0.0079 for 5 vs 5 (x 6 tests = 0.048),
+    0.029 for 4 vs 4 (x 6 = 0.17) and 0.10 for 3 vs 3.
     """
 
     conditions: tuple[str, ...] = CONDITION_KEYS
     n_seeds: int = 5  # search seeds seed_start .. seed_start + n_seeds - 1, for every condition
     seed_start: int = 0
-    budget: int = 4400  # simulations per run, equal for every condition
+    budget: int = 1441  # simulations per run, equal for every condition
     workers: int = MAX_WORKERS  # process pool, capped at 6; never changes a result
     train_suite: str = "train"  # selection happens here
     test_suite: str = "test"  # held out: never seen during the search

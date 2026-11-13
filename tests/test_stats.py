@@ -64,7 +64,8 @@ def test_bootstrap_interval_is_reproducible_and_needs_three_values() -> None:
 
 def test_evidence_note_is_plain_about_few_seeds() -> None:
     assert "WEAK" in evidence_note([3, 3, 3, 3]) and "0.1" in evidence_note([3, 3])
-    assert "WEAK" not in evidence_note([5, 5]) and "large effects" in evidence_note([5, 6])
+    assert "WEAK" in evidence_note([4, 4])  # 6 x 0.029 > 0.05 after Holm
+    assert "WEAK" not in evidence_note([5, 5]) and "complete separation" in evidence_note([5, 6])
     assert "no evidence" in evidence_note([])
 
 

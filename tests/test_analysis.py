@@ -6,7 +6,7 @@ import csv
 from pathlib import Path
 
 import pytest
-from exp_helpers import run_tiny
+from exp_helpers import run_tiny, tiny_suite  # noqa: F401  (tiny_suite is an autouse fixture)
 
 from evomorph.analysis.analyze import NothingToAnalyseError, analyze
 from evomorph.analysis.load import load_experiment_dir, plan_history

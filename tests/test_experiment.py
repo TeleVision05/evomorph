@@ -8,7 +8,14 @@ from pathlib import Path
 
 import pytest
 from conftest import ALL_CONFIGS, configured_genome
-from exp_helpers import run_tiny, tiny_design, tiny_experiment_config, tiny_sections, write_config
+from exp_helpers import (  # noqa: F401  (tiny_suite is an autouse fixture)
+    run_tiny,
+    tiny_design,
+    tiny_experiment_config,
+    tiny_sections,
+    tiny_suite,
+    write_config,
+)
 
 from evomorph.cli import main
 from evomorph.experiments.baselines import (
@@ -105,6 +112,7 @@ def test_every_run_spent_exactly_the_same_budget(tiny) -> None:
 def test_budget_is_rounded_down_to_whole_genomes_for_everyone() -> None:
     exp = experiment_from_mapping({"budget": 4405})  # 11 simulations per genome
     assert exp.sims_per_genome == 11 and exp.effective_budget == 4400
+    assert experiment_from_mapping({}).effective_budget == 1441  # the default is whole genomes
 
 
 def test_unequal_budget_or_config_is_refused(tiny, tmp_path) -> None:

@@ -57,12 +57,12 @@ evolution:
   algorithm: ga
   mode: joint
   seed: 0
-  budget: 4400
+  budget: 1441
   workers: 6                # process pool, hard-capped at 6 so the laptop stays usable
   frozen_body: quadruped
   frozen_controller: quadruped
   kind: cpg
-  population_size: 40       # overridden by experiment.population_size when that is set
+  population_size: 24       # overridden by experiment.population_size when that is set
   elite_count: 2
   tournament_size: 3
   crossover_prob: 0.5
@@ -86,8 +86,8 @@ evolution:
 # batch_size and init_size are set to the GA population size by the experiment
 # (D starts from as many random genomes as the GA's generation 0).
 map_elites:
-  batch_size: 40
-  init_size: 40
+  batch_size: 24
+  init_size: 24
   crossover_prob: 0.2
   descriptors: [sustained_velocity, energy_efficiency]
   # 10 x 10 as in quick.yaml: a run of a few hundred genomes cannot fill the
@@ -100,14 +100,17 @@ experiment:
   n_seeds: 5              # search seeds 0-4, the same for every condition
   seed_start: 0
   # Simulations per run. One genome costs 11 (every training environment once),
-  # so 4400 is 400 genomes = 10 GA generations of 40. Sized from the throughput
-  # measured in the quick run to fit ~2.5 h with 6 workers (docs/EXPERIMENT.md).
-  budget: 4400
+  # so 1441 is 131 genomes, about 5.5 GA generations of 24. It is what fits
+  # 4 conditions x 5 seeds into 2.5 h at the throughput measured in the quick
+  # run (3.89 simulations/s with 6 workers on this shared laptop):
+  #   scripts/plan_budget.py results/experiments/comparison_quick
+  # It is small: see docs/EXPERIMENT.md, "Budget for the full run".
+  budget: 1441
   workers: 6              # capped at 6 whatever is asked
   train_suite: train      # 11 environments (evomorph/simulation/suites.py)
   test_suite: test        # 11 held-out environments, unseen terrain seeds
   train_seed: 0           # training environment i uses spawn seed 0 + i
-  population_size: 40
+  population_size: 24      # small, so the small budget still gives ~5 generations
   rescore_seeds: 3        # champion: 3 fresh spawn seeds x 11 environments per suite
   set_size: 10            # best 10 distinct genomes of the final population / archive
   set_seeds: 1            # set members: 1 fresh spawn seed x 11 environments per suite
