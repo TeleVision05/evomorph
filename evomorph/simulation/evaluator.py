@@ -4,40 +4,59 @@
 so it can be mapped over a process pool. It never raises for a bad genome: any
 problem becomes ``EvalResult(valid=False, failure_reason=...)``.
 
+The measured run advances one physics step at a time (``stepping.py``):
+energy, acceleration, airborne time, contact loads and foot slip are integrated
+at the physics rate, and the glitch guards see the peak over every step.
+
 Outcome semantics
 -----------------
 * ``valid=False``: no trustworthy result (invalid genome, compile error, NaN,
-  runaway velocity, launch, ground clipping). ``fitness = INVALID_FITNESS``.
+  integrator blow-up, runaway velocity, launch, ground clipping or tunnelling).
+  ``fitness = INVALID_FITNESS``.
 * ``valid=True`` with a non-empty ``failure_reason``: a behavioural failure (the
   creature fell). Metrics are real and the fitness carries the fall penalty.
 * ``valid=True`` with an empty ``failure_reason``: completed the run.
+
+One seed is one noise realisation. Selection takes the maximum over many noisy
+scores, so anything that decides survival (elites, archive cells, champions)
+should be scored with :func:`evaluate_robust` over several seeds.
 """
 
 from __future__ import annotations
 
 import math
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 import mujoco
 import numpy as np
 
 from evomorph.config import FitnessConfig, SimConfig
-from evomorph.controllers.base import Controller, Observation, make_controller
-from evomorph.morphology.generator import (
-    ActuatorLayout,
-    build_mjcf,
-    describe_layout,
-    torque_limit,
-)
+from evomorph.controllers.base import Controller, make_controller
 from evomorph.morphology.genome import Genome
-from evomorph.morphology.validator import ModelCompileError, compile_model, validate_genome
-from evomorph.simulation.environment import EnvSpec, build_world
+from evomorph.morphology.validator import ModelCompileError, validate_genome
+from evomorph.simulation.body import (  # noqa: F401  (re-exported helpers)
+    Body,
+    build_body,
+    ground_contacts,
+    lowest_point,
+    observe,
+    spawn,
+)
+from evomorph.simulation.environment import EnvSpec
 from evomorph.simulation.metrics import (
     INVALID_FITNESS,
     Trajectory,
     compute_fitness,
     compute_metrics,
+)
+from evomorph.simulation.stepping import (  # re-exported: check_glitch, SimulationGlitchError
+    IntervalStepper,
+    Peaks,
+    SimulationGlitchError,
+    check_glitch,
+    torso_clearance,
 )
 from evomorph.utils.random_state import make_rng
 
@@ -66,141 +85,31 @@ class EvalResult:
     sim_seconds: float
     wall_seconds: float
     frames: list[np.ndarray] | None = field(default=None, repr=False)
+    # evaluate_robust only: per-seed fitness, in the order of the seeds evaluated
+    seed_fitness: tuple[float, ...] = ()
 
     @property
     def fell(self) -> bool:
         return bool(self.metrics.get("fell", 0.0))
 
 
-class SimulationGlitchError(RuntimeError):
-    """The physics produced something no real body can do (NaN, runaway, launch)."""
-
-
-@dataclass
-class Body:
-    """A compiled creature plus the index maps the run loop needs."""
-
-    model: mujoco.MjModel
-    data: mujoco.MjData
-    layout: ActuatorLayout
-    torso_body: int
-    torso_geom: int
-    qpos_adr: np.ndarray  # joint qpos address per actuator
-    dof_adr: np.ndarray  # joint dof address per actuator
-    foot_of_geom: np.ndarray  # geom id -> limb index, -1 if not a foot
-    is_ground: np.ndarray  # geom id -> belongs to the world body
-    total_mass: float
-    torque_limit: float
-    ground_z: float
-
-
-def build_body(genome: Genome, env: EnvSpec, sim: SimConfig) -> Body:
-    """Compile ``genome`` into a Body. Raises ModelCompileError on failure."""
-    model = compile_model(build_mjcf(genome, env, timestep=sim.timestep))
-    layout = describe_layout(genome)
-    if model.nu != layout.n_actuators:
-        raise ModelCompileError(f"model has {model.nu} actuators, layout {layout.n_actuators}")
-    jid = model.actuator_trnid[:, 0]
-    foot_of_geom = np.full(model.ngeom, -1, dtype=int)
-    for limb in layout.limbs:
-        foot_of_geom[mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, limb.foot_geom)] = (
-            limb.limb_index
-        )
-    torso_body = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "torso")
-    return Body(
-        model=model,
-        data=mujoco.MjData(model),
-        layout=layout,
-        torso_body=torso_body,
-        torso_geom=mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, "torso_geom"),
-        qpos_adr=model.jnt_qposadr[jid].copy(),
-        dof_adr=model.jnt_dofadr[jid].copy(),
-        foot_of_geom=foot_of_geom,
-        is_ground=model.geom_bodyid == 0,
-        total_mass=float(model.body_subtreemass[torso_body]),
-        torque_limit=torque_limit(genome),
-        ground_z=build_world(env).spawn_height,
-    )
-
-
-def lowest_point(model: mujoco.MjModel, data: mujoco.MjData) -> float:
-    """Lowest world z over every collidable creature geom at the current pose."""
-    low = math.inf
-    for g in range(model.ngeom):
-        if model.geom_bodyid[g] == 0 or model.geom_contype[g] == 0:
-            continue
-        z, rot, size = data.geom_xpos[g][2], data.geom_xmat[g].reshape(3, 3), model.geom_size[g]
-        gtype = model.geom_type[g]
-        if gtype == mujoco.mjtGeom.mjGEOM_SPHERE:
-            low = min(low, z - size[0])
-        elif gtype == mujoco.mjtGeom.mjGEOM_CAPSULE:
-            low = min(low, z - abs(rot[2, 2]) * size[1] - size[0])
-        elif gtype == mujoco.mjtGeom.mjGEOM_BOX:
-            low = min(low, z - float(np.sum(np.abs(rot[2, :]) * size[:3])))
-        else:
-            low = min(low, z - model.geom_rbound[g])
-    return low
-
-
-def spawn(body: Body, sim: SimConfig, rng: np.random.Generator) -> None:
-    """Rest pose (+ seeded joint noise), lowered so the lowest geom sits just above ground."""
-    m, d = body.model, body.data
-    mujoco.mj_resetData(m, d)
-    if sim.init_noise > 0:
-        noise = rng.normal(0.0, sim.init_noise, size=body.qpos_adr.size)
-        lo, hi = m.jnt_range[m.actuator_trnid[:, 0]].T
-        d.qpos[body.qpos_adr] = np.clip(noise, lo, hi)
-    mujoco.mj_forward(m, d)
-    d.qpos[2] += body.ground_z + sim.spawn_clearance - lowest_point(m, d)
-    mujoco.mj_forward(m, d)
-
-
-def ground_contacts(body: Body) -> tuple[np.ndarray, bool, bool]:
-    """(per-limb foot contact, torso contact, any creature-ground contact)."""
+def _instant_peaks(body: Body) -> Peaks:
     d = body.data
-    feet = np.zeros(body.layout.n_limbs, dtype=bool)
-    n = d.ncon
-    if n == 0:
-        return feet, False, False
-    g1, g2 = d.contact.geom1[:n], d.contact.geom2[:n]
-    gr1, gr2 = body.is_ground[g1], body.is_ground[g2]
-    mixed = gr1 ^ gr2
-    if not np.any(mixed):
-        return feet, False, False
-    creature = np.where(gr1, g2, g1)[mixed]
-    limbs = body.foot_of_geom[creature]
-    feet[limbs[limbs >= 0]] = True
-    return feet, bool(np.any(creature == body.torso_geom)), True
-
-
-def check_glitch(body: Body, sim: SimConfig, z_start: float) -> None:
-    """Raise SimulationGlitchError if the state is not physically believable."""
-    d = body.data
-    if not (np.all(np.isfinite(d.qpos)) and np.all(np.isfinite(d.qvel))):
-        raise SimulationGlitchError("non-finite state (NaN/inf)")
-    if d.warning[mujoco.mjtWarning.mjWARN_BADQACC].number > 0:
-        raise SimulationGlitchError("integrator instability (bad qacc)")
-    speed = float(np.linalg.norm(d.qvel[0:3]))
-    if speed > sim.max_linear_speed:
-        raise SimulationGlitchError(f"runaway linear speed {speed:.1f} m/s")
-    spin = float(np.linalg.norm(d.qvel[3:6]))
-    if spin > sim.max_angular_speed:
-        raise SimulationGlitchError(f"runaway angular speed {spin:.1f} rad/s")
-    z = float(d.qpos[2])
-    if z - z_start > sim.max_height_gain:
-        raise SimulationGlitchError(f"launched {z - z_start:.2f} m above start height")
-    if z < body.ground_z - sim.max_ground_penetration:
-        raise SimulationGlitchError("torso clipped through the ground")
+    pen = max(0.0, -float(d.contact.dist.min())) if d.ncon else 0.0
+    return Peaks(float(np.linalg.norm(d.qvel[0:3])), float(np.linalg.norm(d.qvel[3:6])), pen)
 
 
 def settle(body: Body, sim: SimConfig, frames: _FrameSink | None) -> None:
-    """Hold the rest pose (all targets 0) for ``settle_time``."""
+    """Hold the rest pose (all targets 0) for ``settle_time``.
+
+    Nothing is measured while settling, so physics runs in C (``nstep``) and the
+    guards check the state at each control step.
+    """
     body.data.ctrl[:] = 0.0
-    z0 = float(body.data.qpos[2])
-    n = round(sim.settle_time * sim.control_rate)
-    for _ in range(n):
+    h0 = torso_clearance(body)
+    for _ in range(round(sim.settle_time * sim.control_rate)):
         mujoco.mj_step(body.model, body.data, nstep=sim.n_substeps)
-        check_glitch(body, sim, z0)
+        check_glitch(body, sim, h0, _instant_peaks(body))
         if frames is not None and frames.include_settle:
             frames.maybe_capture(body.data)
 
@@ -245,7 +154,7 @@ class _Recorder:
         self.torso_c = np.zeros(n, dtype=bool)
         self.any_c = np.zeros(n, dtype=bool)
 
-    def add(self, t: float, body: Body, contacts: tuple[np.ndarray, bool, bool]) -> None:
+    def add(self, t: float, body: Body, feet: np.ndarray, torso: bool, any_c: bool) -> None:
         d, k = body.data, self.k
         self.time[k] = t
         self.pos[k] = d.qpos[0:3]
@@ -253,10 +162,12 @@ class _Recorder:
         self.linvel[k] = d.qvel[0:3]
         self.jvel[k] = d.qvel[body.dof_adr]
         self.force[k] = d.actuator_force
-        self.feet[k], self.torso_c[k], self.any_c[k] = contacts
+        self.feet[k], self.torso_c[k], self.any_c[k] = feet, torso, any_c
         self.k += 1
 
-    def trajectory(self, body: Body, duration: float, fall_time: float | None) -> Trajectory:
+    def trajectory(
+        self, body: Body, stepper: IntervalStepper, duration: float, fall_time: float | None
+    ) -> Trajectory:
         s = slice(0, self.k)
         return Trajectory(
             time=self.time[s],
@@ -274,28 +185,30 @@ class _Recorder:
             n_limbs=body.layout.n_limbs,
             fell=fall_time is not None,
             fall_time=fall_time,
+            extra={"rest_exclusions": int(body.model.nexclude)},
+            stats=stepper.stats.truncated(self.k),
         )
 
 
-def observe(t: float, body: Body, feet: np.ndarray) -> Observation:
-    d = body.data
-    return Observation(
-        time=t,
-        joint_pos=d.qpos[body.qpos_adr].copy(),
-        joint_vel=d.qvel[body.dof_adr].copy(),
-        torso_quat=d.qpos[3:7].copy(),
-        foot_contacts=feet.copy(),
-    )
+class _FallDetector:
+    """Flip test plus torso-ground contact accumulated over a sliding window."""
 
+    def __init__(self, sim: SimConfig) -> None:
+        self.cos_limit = math.cos(math.radians(sim.fall_tilt_deg))
+        self.limit = sim.fall_contact_time
+        self.window = np.zeros(max(1, round(sim.fall_contact_window * sim.control_rate)))
+        self.k = 0
 
-def _fall_reason(body: Body, sim: SimConfig, torso_time: float) -> str | None:
-    q = body.data.qpos[3:7]
-    up_z = 1.0 - 2.0 * (q[1] ** 2 + q[2] ** 2)
-    if up_z < math.cos(math.radians(sim.fall_tilt_deg)):
-        return "flipped over"
-    if torso_time >= sim.fall_contact_time:
-        return "torso resting on the ground"
-    return None
+    def update(self, body: Body, torso_seconds: float) -> str | None:
+        """Feed one interval's torso-contact time; return a fall reason or None."""
+        self.window[self.k % self.window.size] = torso_seconds
+        self.k += 1
+        q = body.data.qpos[3:7]
+        if 1.0 - 2.0 * (q[1] ** 2 + q[2] ** 2) < self.cos_limit:
+            return "flipped over"
+        if float(np.sum(self.window)) >= self.limit - 1e-9:
+            return "torso resting on the ground"
+        return None
 
 
 def run(
@@ -306,25 +219,25 @@ def run(
     n_ctrl = round(sim.duration * sim.control_rate)
     dt = 1.0 / sim.control_rate
     rec = _Recorder(n_ctrl + 1, body.layout.n_actuators, body.layout.n_limbs)
-    contacts = ground_contacts(body)
-    rec.add(0.0, body, contacts)
-    z0, torso_time = float(body.data.qpos[2]), 0.0
+    stepper = IntervalStepper(body, sim, n_ctrl + 1)
+    feet, torso, touching = ground_contacts(body)
+    rec.add(0.0, body, feet, torso, touching)
+    h0, falls = torso_clearance(body), _FallDetector(sim)
     fall_time, reason = None, None
     for k in range(n_ctrl):
         t = k * dt
-        body.data.ctrl[:] = controller.act(t, observe(t, body, contacts[0]))
-        mujoco.mj_step(body.model, body.data, nstep=sim.n_substeps)
-        check_glitch(body, sim, z0)
-        contacts = ground_contacts(body)
-        rec.add(t + dt, body, contacts)
+        body.data.ctrl[:] = controller.act(t, observe(t, body, feet))
+        check_glitch(body, sim, h0, stepper.advance(k + 1))
+        s = stepper.stats
+        feet = stepper.feet.copy()
+        rec.add(t + dt, body, feet, s.torso_touch[k + 1] > 0, s.airborne[k + 1] < s.n_steps[k + 1])
         if frames is not None:
             frames.maybe_capture(body.data)
-        torso_time = torso_time + dt if contacts[1] else 0.0
-        reason = _fall_reason(body, sim, torso_time)
+        reason = falls.update(body, s.torso_touch[k + 1] * s.dt)
         if reason is not None:
             fall_time = t + dt
             break
-    return rec.trajectory(body, sim.duration, fall_time), reason
+    return rec.trajectory(body, stepper, sim.duration, fall_time), reason
 
 
 def _invalid(genome_id: str, reason: str, env: EnvSpec, seed: int, t0: float) -> EvalResult:
@@ -394,4 +307,54 @@ def evaluate(
         sim_seconds=float(body.data.time),
         wall_seconds=time.perf_counter() - t0,
         frames=frames.frames if frames is not None else None,
+    )
+
+
+def evaluate_robust(
+    genome: Genome,
+    env: EnvSpec | None = None,
+    sim: SimConfig | None = None,
+    fitness: FitnessConfig | None = None,
+    seeds: Sequence[int] = (0, 1, 2),
+    aggregate: str = "mean",
+    sims: Sequence[SimConfig] = (),
+) -> EvalResult:
+    """Score ``genome`` over several noise realisations to defeat the winner's curse.
+
+    Runs one evaluation per seed in ``seeds`` with ``sim``, plus one per extra
+    config in ``sims`` (for example a halved timestep) using seed ``seeds[0]``.
+    Any invalid run makes the whole result invalid with that run's reason.
+    ``fitness`` is the mean (``aggregate="mean"``) or minimum (``"min"``) of the
+    per-run scores; ``metrics`` and ``fitness_terms`` are per-key means;
+    ``failure_reason`` reports how many runs fell; ``seed_fitness`` lists every
+    run's score. Picklable like :func:`evaluate`.
+    """
+    if aggregate not in ("mean", "min"):
+        raise ValueError(f"aggregate must be 'mean' or 'min', got {aggregate!r}")
+    if not seeds:
+        raise ValueError("evaluate_robust needs at least one seed")
+    t0 = time.perf_counter()
+    runs = [evaluate(genome, env, sim, fitness, seed=s) for s in seeds]
+    runs += [evaluate(genome, env, extra, fitness, seed=seeds[0]) for extra in sims]
+    bad = next((r for r in runs if not r.valid), None)
+    if bad is not None:
+        out = _invalid(bad.genome_id, bad.failure_reason, bad.env, bad.seed, t0)
+        out.seed_fitness = tuple(r.fitness for r in runs)
+        return out
+    scores = [r.fitness for r in runs]
+    n_fell = sum(r.fell for r in runs)
+    return EvalResult(
+        genome_id=runs[0].genome_id,
+        valid=True,
+        failure_reason=f"fell in {n_fell}/{len(runs)} runs" if n_fell else "",
+        fitness=float(np.mean(scores) if aggregate == "mean" else np.min(scores)),
+        metrics={k: float(np.mean([r.metrics[k] for r in runs])) for k in runs[0].metrics},
+        fitness_terms={
+            k: float(np.mean([r.fitness_terms[k] for r in runs])) for k in runs[0].fitness_terms
+        },
+        env=runs[0].env,
+        seed=int(seeds[0]),
+        sim_seconds=float(sum(r.sim_seconds for r in runs)),
+        wall_seconds=time.perf_counter() - t0,
+        seed_fitness=tuple(scores),
     )

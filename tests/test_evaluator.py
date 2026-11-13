@@ -21,7 +21,13 @@ from evomorph.morphology.genome import (
     save_genome,
 )
 from evomorph.simulation.environment import EnvSpec
-from evomorph.simulation.evaluator import EvalResult, build_body, evaluate, spawn
+from evomorph.simulation.evaluator import (
+    EvalResult,
+    build_body,
+    evaluate,
+    evaluate_robust,
+    spawn,
+)
 from evomorph.simulation.metrics import INVALID_FITNESS
 from evomorph.utils.random_state import make_rng, spawn_rngs
 
@@ -105,12 +111,27 @@ def test_glitch_guard_marks_launch_invalid() -> None:
     assert not r.valid and "glitch" in r.failure_reason
 
 
-def test_falls_are_valid_but_penalised() -> None:
-    biped = configured_genome(1, 2, torso_length=0.6, hip_splay=80.0, lower_splay=85.0)
-    r = evaluate(biped, sim=SimConfig(duration=4.0))
-    assert r.valid
-    if r.fell:  # a mid-body leg pair is a pitch seesaw: it normally tips onto its torso
-        assert r.failure_reason.startswith("fell at") and r.fitness_terms["fall"] < 0
+def test_robust_evaluation_aggregates_seeds() -> None:
+    g, sim = reference_quadruped(), SimConfig(duration=3.0)
+    singles = [evaluate(g, sim=sim, seed=s) for s in (0, 1, 2)]
+    mean = evaluate_robust(g, sim=sim, seeds=(0, 1, 2))
+    worst = evaluate_robust(g, sim=sim, seeds=(0, 1, 2), aggregate="min")
+    assert mean.valid and mean.seed_fitness == tuple(r.fitness for r in singles)
+    assert mean.fitness == pytest.approx(np.mean(mean.seed_fitness))
+    assert worst.fitness == min(mean.seed_fitness) <= mean.fitness
+    fwd = np.mean([r.metrics["forward_displacement"] for r in singles])
+    assert mean.metrics["forward_displacement"] == pytest.approx(fwd)
+    assert mean.fitness == pytest.approx(sum(mean.fitness_terms.values()))
+    half_dt = evaluate_robust(g, sim=sim, seeds=(0,), sims=(replace(sim, timestep=0.001),))
+    assert len(half_dt.seed_fitness) == 2
+    pickle.dumps((evaluate_robust, g, mean))
+
+
+def test_robust_evaluation_is_invalid_if_any_run_is() -> None:
+    sim = SimConfig(duration=1.0)
+    bad = replace(sim, max_height_gain=-1.0)  # every state "launches"
+    r = evaluate_robust(reference_quadruped(), sim=sim, seeds=(0,), sims=(bad,))
+    assert not r.valid and "launched" in r.failure_reason and len(r.seed_fitness) == 2
 
 
 def test_friction_changes_outcome() -> None:

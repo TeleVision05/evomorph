@@ -10,25 +10,40 @@ sim:
   init_noise: 0.01        # rad std of seeded spawn joint noise
   spawn_clearance: 0.005  # m
   fall_tilt_deg: 75.0
-  fall_contact_time: 0.25 # s of continuous torso-ground contact = fall
-  max_linear_speed: 5.0   # m/s glitch guard
-  max_angular_speed: 40.0 # rad/s glitch guard
-  max_height_gain: 1.0    # m glitch guard (launch)
-  max_ground_penetration: 0.05
+  fall_contact_time: 0.25   # s of torso-ground contact ...
+  fall_contact_window: 1.0  # ... within this sliding window = fall
+  max_linear_speed: 5.0     # m/s glitch guard (absolute)
+  max_speed_per_size: 10.0  # body sizes/s glitch guard (size = torso length + 2 x reach)
+  max_angular_speed: 40.0   # rad/s glitch guard
+  max_height_gain: 1.0      # m glitch guard (launch, above start clearance)
+  max_height_gain_per_size: 1.0
+  max_ground_penetration: 0.05   # m torso centre below local ground
+  max_contact_penetration: 0.12  # m any geom sunk into the ground
 
+# fitness = (sustained_velocity / velocity_scale) x product of quality factors
+#           - w_fall x fell - w_still x stationary   (see evomorph/simulation/fitness.py)
 fitness:
-  velocity_scale: 0.2     # m/s: progress term = sustained_velocity / this
-  lateral_scale: 1.0      # m
-  yaw_scale: 1.5708       # rad
-  tilt_scale: 1.0472      # rad
+  velocity_scale: 0.2     # m/s
+  tilt_scale: 1.0472      # rad: upright factor hits 0
+  lateral_ratio: 0.5      # sideways deviation per metre forward that halves the lateral factor
+  yaw_scale: 0.7          # rad of heading excursion that halves the rotation factor
+  cot_scale: 2.0          # cost of transport that halves the energy factor
+  slip_penalty: 0.5       # progress share lost when every stance skates
+  airborne_allowance: 0.05
+  airborne_scale: 0.5
+  effort_scale: 0.5       # mean (torque/limit)^2 that halves the effort factor
+  smooth_scale: 3.0       # RMS torso acceleration in g that halves the smoothness factor
   still_distance: 0.1     # m
-  airborne_allowance: 0.2
   w_progress: 1.0
-  w_lateral: 0.5
-  w_rotation: 0.5
-  w_energy: 0.1
-  w_fall: 1.0
-  w_still: 0.2
-  w_smooth: 0.1
+  w_upright: 1.0          # factor exponents: 0 switches a factor off
+  w_lateral: 1.0
+  w_rotation: 1.0
+  w_energy: 1.0
+  w_slip: 1.0
+  w_support: 1.0
   w_airborne: 1.0
-  penalty_cap: 2.0
+  w_effort: 1.0
+  w_smoothness: 1.0
+  w_fall: 1.0             # additive
+  w_still: 0.2            # additive
+  penalty_cap: 2.0        # backward progress floor

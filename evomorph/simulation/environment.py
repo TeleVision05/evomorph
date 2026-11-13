@@ -17,6 +17,7 @@ Only the flat terrain is implemented here. Every other kind is routed to
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 ENV_KINDS: tuple[str, ...] = ("flat", "slope", "uneven", "friction", "random")
@@ -48,11 +49,21 @@ class EnvSpec:
 
 @dataclass(frozen=True)
 class WorldFragments:
-    """MJCF pieces for one terrain."""
+    """MJCF pieces for one terrain, plus how high the ground is anywhere.
+
+    ``height_at(x, y)`` returns the terrain surface z under world point (x, y).
+    The evaluator's glitch guards (torso clipped into the ground, launched above
+    it) measure against this, so a slope or bumpy terrain must supply it. When it
+    is None the ground is flat at ``spawn_height``.
+    """
 
     assets: str
     worldbody: str
     spawn_height: float = 0.0  # ground z under the creature's spawn point (x=y=0)
+    height_at: Callable[[float, float], float] | None = None
+
+    def ground_height(self, x: float, y: float) -> float:
+        return self.spawn_height if self.height_at is None else float(self.height_at(x, y))
 
 
 def _ground_attrs(friction: float) -> str:
@@ -92,8 +103,12 @@ def _flat(env: EnvSpec) -> WorldFragments:
 # TERRAIN EXTENSION POINT -- the terrain stage implements this one function.
 # It must return WorldFragments for kinds 'slope', 'uneven', 'friction' and
 # 'random', reuse _ground_attrs() / the collision bitmasks above for every
-# terrain geom, keep the creature's forward direction along +x, and set
-# spawn_height to the ground z at (0, 0).
+# terrain geom, keep the creature's forward direction along +x, set
+# spawn_height to the ground z at (0, 0), and set height_at(x, y) to the
+# surface height anywhere the creature can reach (a slope of angle a rising
+# along +x is ``lambda x, y: x * tan(a)``). Without height_at the evaluator
+# assumes flat ground at spawn_height and will flag a downhill walker as
+# "clipped through the ground" (tests/test_evaluator_guards.py shows how).
 # ============================================================================
 def build_terrain_extension(env: EnvSpec) -> WorldFragments:
     raise NotImplementedError(

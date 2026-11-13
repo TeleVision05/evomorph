@@ -6,7 +6,10 @@ always kept separate from the combined score (``compute_fitness``).
 
 Forward is +x in the world frame. A ``Trajectory`` is sampled at the control
 rate from the start of measurement (after settling) until the run ends or the
-creature falls.
+creature falls. Quantities that must be integrated (energy, acceleration,
+airborne time, contact loads, foot slip) come from ``Trajectory.stats``, which
+the evaluator accumulates at every physics step; synthetic trajectories without
+``stats`` fall back to control-rate estimates.
 """
 
 from __future__ import annotations
@@ -17,20 +20,25 @@ from dataclasses import dataclass, field
 
 import numpy as np
 
-from evomorph.config import FitnessConfig
+from evomorph.simulation.fitness import (  # noqa: F401  (re-exported: the contract lives here)
+    FITNESS_TERMS,
+    GRAVITY,
+    INVALID_FITNESS,
+    compute_fitness,
+)
+from evomorph.simulation.stepstats import SLIP_SPEED, StepStats
 
-GRAVITY = 9.81
 # Sustained velocity: the run is cut into N_WINDOWS equal windows and the score is
 # the mean velocity of the N_SLOWEST slowest. A lunge then collapse fills one
 # window; walking the whole time fills all of them.
 N_WINDOWS = 5
 N_SLOWEST = 3
 MIN_COT_DISTANCE = 0.01  # m; COT denominator floor so a stationary body has finite COT
-INVALID_FITNESS = -20.0  # below any valid score (valid scores are bounded below by ~-9)
 
 METRIC_DOCS: dict[str, str] = {
     "forward_displacement": "m, torso x at end minus x at start (+ is forward)",
-    "avg_forward_velocity": "m/s, forward_displacement / survival_time",
+    "avg_forward_velocity": "m/s, forward_displacement / intended duration (not survival "
+    "time, so a lunge-and-fall does not report an inflated speed)",
     "sustained_velocity": "m/s, mean velocity of the 3 slowest of 5 equal windows of the "
     "intended duration; windows after a fall count as 0",
     "path_length": "m, horizontal distance travelled by the torso along its path",
@@ -44,21 +52,32 @@ METRIC_DOCS: dict[str, str] = {
     "upright_score": "1 - mean_tilt / (pi/2), in [0, 1]; 1 = perfectly level",
     "yaw_drift": "rad, max |heading(t) - heading(0)| with heading unwrapped (spinning grows it)",
     "net_yaw": "rad, unwrapped heading change start to end (signed, + = turned left)",
-    "energy": "J, integral over time of sum_j |torque_j * joint_velocity_j|",
+    "energy": "J, integral over time of sum_j |torque_j * joint_velocity_j| (physics rate)",
     "mean_power": "W, energy / survival_time",
     "cost_of_transport": "energy / (mass * g * max(forward_displacement, 0.01 m)), dimensionless",
     "energy_efficiency": "d / (d + energy/(m g)) with d = max(forward_displacement, 0); "
     "= 1/(1+COT) when moving forward, 0 otherwise. In [0, 1)",
-    "actuator_effort": "mean over time and joints of (torque / torque_limit)^2, in [0, 1]",
-    "accel_rms": "m/s^2, RMS torso linear acceleration (finite-differenced at control rate)",
+    "actuator_effort": "mean over control samples and joints of (torque / torque_limit)^2, "
+    "in [0, 1]; holding a heavy static torque costs effort even with no motion",
+    "accel_rms": "m/s^2, RMS torso linear acceleration (physics rate)",
     "smoothness": "1 / (1 + accel_rms / g), in (0, 1]; vibration drives it down",
-    "foot_contact_fraction": "fraction of samples with at least one foot on the ground",
-    "airborne_fraction": "fraction of samples with no creature geom touching the ground",
-    "torso_contact_fraction": "fraction of samples with the torso touching the ground",
+    "foot_contact_fraction": "fraction of control samples with at least one foot on the ground",
+    "airborne_fraction": "fraction of physics steps with no creature geom touching the ground",
+    "torso_contact_fraction": "fraction of physics steps with the torso touching the ground",
+    "nonfoot_contact_fraction": "fraction of physics steps with a limb segment or the torso "
+    "(anything but a foot) touching the ground",
+    "foot_support_fraction": "share of the ground normal impulse carried by feet, in [0, 1]; "
+    "shin-draggers and belly-sliders score low",
+    "foot_slip_speed": "m/s, normal-force-weighted mean tangential speed of foot contacts",
+    "slip_fraction": f"share of foot normal impulse delivered while sliding > {SLIP_SPEED} m/s, "
+    "in [0, 1]; 0 = every stance grips, 1 = the feet only skate",
+    "max_penetration": "m, deepest creature-ground contact penetration over the run",
     "mean_height": "m, mean torso z (world frame)",
     "max_height_gain": "m, max torso z minus torso z at measurement start",
     "peak_speed": "m/s, max torso linear speed",
     "total_mass": "kg, total creature mass",
+    "rest_exclusions": "body pairs excluded from self-collision because they overlap at the "
+    "rest pose (thick legs crowded on a short torso); 0 for most bodies",
     "n_joints": "number of actuated joints",
     "n_limbs": "number of limbs",
 }
@@ -71,7 +90,8 @@ class Trajectory:
 
     ``torso_quat`` is (w, x, y, z). ``torso_linvel`` is world frame. Joint arrays
     follow actuator order. ``duration`` is the intended run length (s), which can
-    exceed ``time[-1]`` when the creature fell.
+    exceed ``time[-1]`` when the creature fell. Contact flags in a row are true if
+    the contact occurred at any physics step of the interval ending at that row.
     """
 
     time: np.ndarray  # (T,)
@@ -90,6 +110,7 @@ class Trajectory:
     fell: bool = False
     fall_time: float | None = None
     extra: dict = field(default_factory=dict)
+    stats: StepStats | None = None  # physics-step sums per control interval (see stepstats)
 
     @property
     def n_joints(self) -> int:
@@ -157,7 +178,13 @@ def heading_metrics(traj: Trajectory) -> tuple[float, float]:
 
 
 def energy(traj: Trajectory) -> float:
-    """Trapezoidal integral of total absolute mechanical power (J)."""
+    """Integral of total absolute mechanical power (J).
+
+    Physics-rate sum from ``traj.stats`` when present, otherwise a trapezoidal
+    integral of the control-rate samples (biased low for fast gaits).
+    """
+    if traj.stats is not None:
+        return traj.stats.total("energy")
     if traj.time.size < 2 or traj.n_joints == 0:
         return 0.0
     power = np.sum(np.abs(traj.actuator_force * traj.joint_vel), axis=1)
@@ -165,10 +192,45 @@ def energy(traj: Trajectory) -> float:
 
 
 def accel_rms(traj: Trajectory) -> float:
+    """RMS torso linear acceleration (m/s^2), physics rate when ``stats`` is present."""
+    s = traj.stats
+    if s is not None:
+        t = s.total_steps * s.dt
+        return math.sqrt(s.total("accel_sq") / t) if t > 0 else 0.0
     if traj.time.size < 3:
         return 0.0
     acc = np.diff(traj.torso_linvel, axis=0) / np.diff(traj.time)[:, None]
     return float(np.sqrt(np.mean(np.sum(acc**2, axis=1))))
+
+
+def contact_metrics(traj: Trajectory) -> dict[str, float]:
+    """Contact, support and slip metrics (physics rate when ``stats`` is present)."""
+    s = traj.stats
+    if s is None:  # control-rate approximation for synthetic trajectories
+        foot_down = np.any(traj.foot_contacts, axis=1) if traj.foot_contacts.size else None
+        touching = traj.any_contact
+        on_feet = touching if foot_down is None else foot_down & ~traj.torso_contact
+        support = float(np.sum(on_feet & touching) / np.sum(touching)) if touching.any() else 0.0
+        return {
+            "airborne_fraction": _frac(~traj.any_contact),
+            "torso_contact_fraction": _frac(traj.torso_contact),
+            "nonfoot_contact_fraction": _frac(traj.torso_contact),
+            "foot_support_fraction": support,
+            "foot_slip_speed": 0.0,
+            "slip_fraction": 0.0,
+            "max_penetration": 0.0,
+        }
+    foot = s.total("foot_impulse")
+    load = foot + s.total("limb_impulse") + s.total("torso_impulse")
+    return {
+        "airborne_fraction": s.step_fraction("airborne"),
+        "torso_contact_fraction": s.step_fraction("torso_touch"),
+        "nonfoot_contact_fraction": s.step_fraction("nonfoot_touch"),
+        "foot_support_fraction": foot / load if load > 0 else 0.0,
+        "foot_slip_speed": s.total("slip_impulse") / foot if foot > 0 else 0.0,
+        "slip_fraction": s.total("sliding_impulse") / foot if foot > 0 else 0.0,
+        "max_penetration": float(np.max(s.max_penetration)) if s.max_penetration.size else 0.0,
+    }
 
 
 def actuator_effort(traj: Trajectory) -> float:
@@ -195,7 +257,7 @@ def compute_metrics(traj: Trajectory) -> dict[str, float]:
     d_pos = max(fwd, 0.0)
     out = {
         "forward_displacement": fwd,
-        "avg_forward_velocity": fwd / surv if surv > 0 else 0.0,
+        "avg_forward_velocity": fwd / traj.duration if traj.duration > 0 else 0.0,
         "sustained_velocity": sustained_velocity(traj),
         "path_length": path_length(traj),
         "lateral_displacement": float(abs(rel_y[-1])),
@@ -216,77 +278,13 @@ def compute_metrics(traj: Trajectory) -> dict[str, float]:
         "accel_rms": a_rms,
         "smoothness": 1.0 / (1.0 + a_rms / g),
         "foot_contact_fraction": _frac(np.any(traj.foot_contacts, axis=1)),
-        "airborne_fraction": _frac(~traj.any_contact),
-        "torso_contact_fraction": _frac(traj.torso_contact),
+        **contact_metrics(traj),
         "mean_height": float(np.mean(traj.torso_pos[:, 2])),
         "max_height_gain": float(np.max(traj.torso_pos[:, 2]) - z0),
         "peak_speed": float(np.max(np.linalg.norm(traj.torso_linvel, axis=1))),
         "total_mass": float(m),
+        "rest_exclusions": float(traj.extra.get("rest_exclusions", 0)),
         "n_joints": float(traj.n_joints),
         "n_limbs": float(traj.n_limbs),
     }
     return {k: float(out[k]) for k in METRIC_KEYS}
-
-
-# ----------------------------------------------------------------------------
-# Fitness
-# ----------------------------------------------------------------------------
-
-FITNESS_TERMS: tuple[str, ...] = (
-    "progress",
-    "lateral",
-    "rotation",
-    "energy",
-    "fall",
-    "stationary",
-    "smoothness",
-    "airborne",
-)
-
-
-def compute_fitness(
-    metrics: dict[str, float], cfg: FitnessConfig
-) -> tuple[float, dict[str, float]]:
-    """Combine raw metrics into one score; returns (fitness, signed per-term contributions).
-
-    ``progress`` = w * (sustained_velocity / velocity_scale) * upright gate, where the
-    gate falls linearly from 1 (level) to 0 at ``tilt_scale`` mean tilt. Every other
-    term is a penalty in units of its scale, clipped to ``penalty_cap`` and weighted:
-
-    * lateral: lateral_displacement / lateral_scale            (sideways crab)
-    * rotation: yaw_drift / yaw_scale                          (spinner, circler)
-    * energy: mean_power / (m g velocity_scale)                (thrashing, vibrating)
-    * fall: 1 if fell                                          (lunge-and-collapse)
-    * stationary: 1 - forward/still_distance, floored at 0     (standing still)
-    * smoothness: accel_rms / g                                (vibration, impacts)
-    * airborne: excess of airborne_fraction over the allowance (launching, hopping)
-
-    Using *sustained* rather than total velocity means progress must be held for
-    most of the run; a single lunge scores close to nothing. A non-finite metric
-    yields ``INVALID_FITNESS``.
-    """
-    vals = [metrics.get(k, math.nan) for k in METRIC_KEYS]
-    if not all(math.isfinite(v) for v in vals):
-        return INVALID_FITNESS, dict.fromkeys(FITNESS_TERMS, 0.0)
-    cap = cfg.penalty_cap
-
-    def pen(x: float) -> float:
-        return float(min(max(x, 0.0), cap))
-
-    gate = min(max(1.0 - metrics["mean_tilt"] / cfg.tilt_scale, 0.0), 1.0)
-    weight = metrics["total_mass"] * GRAVITY
-    forward = metrics["forward_displacement"]
-    air = (metrics["airborne_fraction"] - cfg.airborne_allowance) / (1.0 - cfg.airborne_allowance)
-    terms = {
-        # Backward motion is penalised, but only down to -cap so the score stays bounded.
-        "progress": cfg.w_progress
-        * max(metrics["sustained_velocity"] / cfg.velocity_scale * gate, -cap),
-        "lateral": -cfg.w_lateral * pen(metrics["lateral_displacement"] / cfg.lateral_scale),
-        "rotation": -cfg.w_rotation * pen(metrics["yaw_drift"] / cfg.yaw_scale),
-        "energy": -cfg.w_energy * pen(metrics["mean_power"] / (weight * cfg.velocity_scale)),
-        "fall": -cfg.w_fall * metrics["fell"],
-        "stationary": -cfg.w_still * pen(1.0 - max(forward, 0.0) / cfg.still_distance),
-        "smoothness": -cfg.w_smooth * pen(metrics["accel_rms"] / GRAVITY),
-        "airborne": -cfg.w_airborne * pen(air),
-    }
-    return float(sum(terms.values())), {k: float(v) for k, v in terms.items()}

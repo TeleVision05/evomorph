@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 
@@ -19,12 +19,19 @@ from evomorph.morphology.generator import ActuatorLayout
 from evomorph.morphology.genome import Genome
 
 
+def _zeros3() -> np.ndarray:
+    return np.zeros(3)
+
+
 @dataclass
 class Observation:
     """What a controller may sense at time ``time`` (s since measurement start).
 
     Joint arrays follow actuator order. ``torso_quat`` is MuJoCo's (w, x, y, z).
-    ``foot_contacts`` has one bool per limb in limb order.
+    ``foot_contacts`` has one bool per limb in limb order: whether that foot
+    touched the ground at any physics step of the last control interval.
+    ``torso_pos`` and ``torso_linvel`` are world frame; ``torso_angvel`` is in
+    the torso's own frame (MuJoCo free-joint convention), so a gyro-like sensor.
     """
 
     time: float
@@ -32,6 +39,9 @@ class Observation:
     joint_vel: np.ndarray
     torso_quat: np.ndarray
     foot_contacts: np.ndarray
+    torso_pos: np.ndarray = field(default_factory=_zeros3)
+    torso_linvel: np.ndarray = field(default_factory=_zeros3)
+    torso_angvel: np.ndarray = field(default_factory=_zeros3)
 
 
 class Controller(ABC):

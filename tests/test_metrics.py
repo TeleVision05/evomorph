@@ -17,6 +17,7 @@ from evomorph.simulation.metrics import (
     compute_fitness,
     compute_metrics,
 )
+from evomorph.simulation.stepstats import StepStats
 
 DT, T = 0.02, 10.0
 MASS = 5.0
@@ -98,6 +99,11 @@ def test_cheats_score_below_slow_straight_walker(cheat) -> None:
     assert fitness(cheat) < fitness("slow"), compute_fitness(compute_metrics(SCENARIOS[cheat]), CFG)
 
 
+def test_avg_forward_velocity_uses_intended_duration() -> None:
+    # 1.2 m then a fall at 1.5 s: 0.12 m/s over the 10 s run, not 0.8 m/s over 1.5 s
+    assert compute_metrics(SCENARIOS["lunge"])["avg_forward_velocity"] == pytest.approx(0.12)
+
+
 def test_basic_metric_values() -> None:
     m = compute_metrics(SCENARIOS["steady"])
     assert m["forward_displacement"] == pytest.approx(2.5, abs=1e-6)
@@ -129,10 +135,11 @@ def test_tilt_and_upright_score() -> None:
 
 
 def test_tilted_walker_progress_is_gated() -> None:
-    upright = compute_fitness(compute_metrics(SCENARIOS["steady"]), CFG)[1]["progress"]
+    upright = compute_fitness(compute_metrics(SCENARIOS["steady"]), CFG)
     tilted = make_traj(x=lambda t: 0.25 * t, roll=lambda t: 0.6 + 0 * t)
-    leaning = compute_fitness(compute_metrics(tilted), CFG)[1]["progress"]
-    assert 0 < leaning < upright
+    leaning = compute_fitness(compute_metrics(tilted), CFG)
+    assert 0 < leaning[0] < upright[0]
+    assert leaning[1]["upright"] < upright[1]["upright"] <= 0.0
 
 
 def test_terms_sum_to_fitness_and_raw_metrics_untouched() -> None:
@@ -159,6 +166,46 @@ def test_valid_fitness_is_bounded_below_invalid_sentinel() -> None:
         airborne=lambda t: np.ones_like(t, dtype=bool),
     )
     assert compute_fitness(compute_metrics(worst), CFG)[0] > INVALID_FITNESS
+
+
+def _with_stats(traj: Trajectory, **sums: float) -> Trajectory:
+    """Attach physics-rate sums spread evenly over the run's intervals."""
+    n = traj.time.size
+    stats = StepStats.zeros(n, dt=0.002)
+    stats.n_steps[1:] = 10
+    for name, total in sums.items():
+        getattr(stats, name)[1:] = total / (n - 1)
+    traj.stats = stats
+    return traj
+
+
+def test_physics_rate_stats_override_control_rate_estimates() -> None:
+    traj = _with_stats(
+        make_traj(x=lambda t: 0.25 * t, power=2.0),
+        energy=31.0,  # the control-rate samples alone would give 20 J
+        airborne=0.3 * 5000,  # 5000 physics steps in 10 s at 2 ms
+        accel_sq=9.0 * 10.0,  # mean |a|^2 = 9 over 10 s -> rms 3
+        foot_impulse=150.0,
+        limb_impulse=40.0,
+        torso_impulse=10.0,
+        slip_impulse=150.0 * 0.2,  # weighted mean slip 0.2 m/s
+        sliding_impulse=150.0 * 0.6,
+    )
+    m = compute_metrics(traj)
+    assert m["energy"] == pytest.approx(31.0)
+    assert m["airborne_fraction"] == pytest.approx(0.3)
+    assert m["accel_rms"] == pytest.approx(3.0)
+    assert m["foot_support_fraction"] == pytest.approx(0.75)
+    assert m["foot_slip_speed"] == pytest.approx(0.2)
+    assert m["slip_fraction"] == pytest.approx(0.6)
+
+
+def test_shin_dragger_has_low_support_and_lower_fitness() -> None:
+    walker = _with_stats(make_traj(x=lambda t: 0.25 * t), foot_impulse=200.0)
+    dragger = _with_stats(make_traj(x=lambda t: 0.25 * t), foot_impulse=80.0, limb_impulse=120.0)
+    mw, md = compute_metrics(walker), compute_metrics(dragger)
+    assert mw["foot_support_fraction"] == 1.0 and md["foot_support_fraction"] == pytest.approx(0.4)
+    assert compute_fitness(md, CFG)[0] < compute_fitness(mw, CFG)[0]
 
 
 def test_metrics_module_does_not_import_mujoco() -> None:
