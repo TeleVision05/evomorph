@@ -30,6 +30,12 @@ def add_env_args(p: argparse.ArgumentParser) -> None:
     p.add_argument("--config", type=Path, help="YAML with sim/fitness sections")
     p.add_argument("--env", default="flat", choices=ENV_KINDS, help="terrain kind")
     p.add_argument("--friction", type=float, default=1.0, help="ground friction coefficient")
+    p.add_argument("--slope", type=float, default=0.0, help="slope in degrees (slope, random)")
+    p.add_argument("--roughness", type=float, default=0.0, help="bump height in m (uneven, random)")
+    p.add_argument("--obstacles", type=int, default=0, help="obstacle count (uneven, random)")
+    p.add_argument(
+        "--friction-spread", type=float, default=1.0, help="friction patch factor >= 1 (friction)"
+    )
     p.add_argument("--env-seed", type=int, default=0, help="terrain seed")
     p.add_argument("--seed", type=int, default=0, help="evaluation seed (spawn noise)")
 
@@ -53,7 +59,15 @@ def genome_from_args(args: argparse.Namespace) -> Genome:
 
 
 def env_from_args(args: argparse.Namespace) -> EnvSpec:
-    return EnvSpec(kind=args.env, friction=args.friction, seed=args.env_seed)
+    return EnvSpec(
+        kind=args.env,
+        slope_deg=args.slope,
+        friction=args.friction,
+        roughness=args.roughness,
+        n_obstacles=args.obstacles,
+        seed=args.env_seed,
+        friction_spread=args.friction_spread,
+    )
 
 
 def configs_from_args(args: argparse.Namespace) -> tuple[SimConfig, FitnessConfig]:

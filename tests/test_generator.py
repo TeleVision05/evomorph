@@ -200,10 +200,10 @@ def test_random_genomes_always_compile(rng) -> None:
         compile_model(build_mjcf(random_genome(rng)))
 
 
-def test_flat_world_honours_friction_and_other_kinds_are_a_seam() -> None:
+def test_flat_world_honours_friction_and_unknown_kinds_are_rejected() -> None:
+    # The other kinds (once a NotImplementedError seam) are covered in test_terrain.py.
     assert 'friction="0.3 ' in build_world(EnvSpec(friction=0.3)).worldbody
     for kind in ("slope", "uneven", "friction", "random"):
-        with pytest.raises(NotImplementedError):
-            build_world(EnvSpec(kind=kind))
+        assert build_world(EnvSpec(kind=kind)).height_at is not None
     with pytest.raises(ValueError):
         build_world(EnvSpec(kind="lava"))
