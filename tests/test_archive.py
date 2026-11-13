@@ -71,6 +71,24 @@ def test_insertion_and_replacement_rules() -> None:
     assert grid[5, 6] == 0.9 and np.isnan(grid[1, 1])
 
 
+def test_spread_cells_starts_at_the_best_and_picks_far_cells() -> None:
+    a = Archive(SPEC, qd_offset=3.2)
+    rng = np.random.default_rng(0)
+    points = [(0.4, 0.35, 2.0), (0.41, 0.36, 0.1), (0.0, 0.0, 0.1), (0.79, 0.69, 0.1)]
+    points += [(0.0, 0.69, 0.1), (0.42, 0.37, 0.2)]
+    for i, (v, e, f) in enumerate(points):
+        a.add(random_genome(rng, f"g{i}"), _result(f, v, e))
+    picked = a.spread_cells(4)
+    assert picked[0] == SPEC.cell((0.4, 0.35))  # the best elite comes first
+    assert set(picked[1:]) == {
+        SPEC.cell((0.0, 0.0)),
+        SPEC.cell((0.79, 0.69)),
+        SPEC.cell((0.0, 0.69)),
+    }
+    assert len(a.spread_cells(50)) == len(a)
+    assert Archive(SPEC).spread_cells(3) == []
+
+
 def test_qd_offset_is_the_lowest_valid_fitness() -> None:
     assert qd_offset_for(FitnessConfig()) == pytest.approx(3.2)
 

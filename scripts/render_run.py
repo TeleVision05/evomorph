@@ -64,21 +64,6 @@ def _champion(run: Path, out: Path, cfg) -> None:
     print(f"wrote {out / 'champion.mp4'}, champion.png, champion_sheet.png")
 
 
-def spread_cells(archive: Archive, k: int) -> list[tuple[int, int]]:
-    """Greedy farthest-point choice of ``k`` occupied cells, starting from the best."""
-    keys = archive.occupied()
-    pts = {c: archive.spec.normalise(archive.get(c).descriptor) for c in keys}
-    best = archive.best()
-    chosen = [archive.spec.cell(best.descriptor)]
-    while len(chosen) < min(k, len(keys)):
-        far = max(
-            (c for c in keys if c not in chosen),
-            key=lambda c: min(np.linalg.norm(pts[c] - pts[s]) for s in chosen),
-        )
-        chosen.append(far)
-    return chosen
-
-
 def _label(img: np.ndarray, text: str) -> np.ndarray:
     pil = Image.fromarray(img)
     draw = ImageDraw.Draw(pil)
@@ -92,7 +77,7 @@ def _elites(run: Path, out: Path, cfg, k: int) -> None:
     env, seed = cfg.eval_spec.runs[0]
     rec = RecordSpec(width=320, height=240, fps=10, include_settle=False)
     rows = []
-    for cell in spread_cells(archive, k):
+    for cell in archive.spread_cells(k):
         e = archive.get(cell)
         g = e.genome
         r = evaluate(g, env, cfg.sim, cfg.fitness, seed=seed, record=rec)

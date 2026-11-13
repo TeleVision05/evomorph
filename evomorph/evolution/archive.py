@@ -161,6 +161,27 @@ class Archive:
             grid[i, j] = e.fitness
         return grid
 
+    def spread_cells(self, k: int) -> list[tuple[int, int]]:
+        """``k`` occupied cells far apart in normalised descriptor space.
+
+        Greedy farthest-point selection starting from the best elite's cell: each
+        next cell maximises its distance to the nearest one already chosen. Used
+        to show behaviourally different elites side by side.
+        """
+        keys = self.occupied()
+        best = self.best()
+        if best is None or k < 1:
+            return []
+        pts = {c: self.spec.normalise(self.cells[c].descriptor) for c in keys}
+        chosen = [self.spec.cell(best.descriptor)]
+        while len(chosen) < min(k, len(keys)):
+            far = max(
+                (c for c in keys if c not in chosen),
+                key=lambda c: min(float(np.linalg.norm(pts[c] - pts[s])) for s in chosen),
+            )
+            chosen.append(far)
+        return chosen
+
     # -- persistence ---------------------------------------------------------
 
     def save(self, folder: str | Path) -> Path:
