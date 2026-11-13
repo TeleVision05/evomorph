@@ -9,7 +9,7 @@ import pandas as pd
 import streamlit as st
 
 from evomorph.visualization import dashboard_data as dd
-from evomorph.visualization.dashboard_common import Ctx, images, select_creature, table
+from evomorph.visualization.dashboard_common import Ctx, images, select_creature
 
 # The strip shows every change of champion; a long run can change it dozens of
 # times, so at most this many evenly spaced changes (always including the
@@ -28,7 +28,7 @@ def _tiles(ctx: Ctx) -> None:
     c = st.columns(6)
     c[0].metric("Generation / batch", int(last["generation"]) if last is not None else "none yet")
     used = int(last["sims"]) if last is not None else 0
-    c[1].metric("Simulations used", f"{used:,} / {budget:,}" if budget else f"{used:,}")
+    c[1].metric(f"Simulations used (of {budget:,})" if budget else "Simulations used", f"{used:,}")
     evaluated = int(m["evaluations"].sum()) if "evaluations" in m.columns else 0
     c[2].metric("Individuals evaluated", f"{evaluated:,}")
     c[3].metric(
@@ -50,29 +50,35 @@ def _tiles(ctx: Ctx) -> None:
 
 
 def _settings(ctx: Ctx) -> None:
-    evo = ctx.run.evolution
+    run, evo = ctx.run, ctx.run.evolution
     mut = evo.get("mutation") or {}
-    div = evo.get("diversity") or {}
-    runs = ", ".join(f"{e.label()}/s{s}" for e, s in ctx.run.eval_runs)
+    runs = ", ".join(f"{e.label()}/s{s}" for e, s in run.eval_runs)
+    rows = {
+        "algorithm": run.algorithm,
+        "mode (what evolves)": evo.get("mode", "joint"),
+        "seed": evo.get("seed"),
+        "budget (simulations)": evo.get("budget"),
+        "evaluation runs per genome": runs,
+        "aggregate over runs": (evo.get("evaluation") or {}).get("aggregate", "mean"),
+    }
+    if run.algorithm == "ga":
+        rows["population"] = evo.get("population_size")
+        rows["diversity mechanism"] = (evo.get("diversity") or {}).get("method", "n/a")
+    else:  # MAP-Elites ignores the GA's population and diversity settings
+        me = run.config.get("map_elites") or {}
+        spec = run.archive_spec
+        rows["batch / initial random genomes"] = f"{me.get('batch_size')} / {me.get('init_size')}"
+        rows["archive axes"] = " x ".join(
+            f"{d} ({b} bins, {lo:g}-{hi:g})"
+            for d, b, (lo, hi) in zip(spec.descriptors, spec.bins, spec.ranges, strict=True)
+        )
     left, right = st.columns(2)
     with left:
         st.markdown("**Run settings**")
-        rows = {
-            "algorithm": ctx.run.algorithm,
-            "mode (what evolves)": evo.get("mode", "joint"),
-            "seed": evo.get("seed"),
-            "budget (simulations)": evo.get("budget"),
-            "evaluation runs per genome": runs,
-            "aggregate over runs": (evo.get("evaluation") or {}).get("aggregate", "mean"),
-            "population / batch": evo.get("population_size")
-            if ctx.run.algorithm == "ga"
-            else (ctx.run.config.get("map_elites") or {}).get("batch_size"),
-            "diversity mechanism": div.get("method", "n/a"),
-        }
-        table(_kv(rows), hide_index=True)
+        st.table(_kv(rows).set_index("setting"))
     with right:
         st.markdown("**Mutation settings** (fixed for the whole run)")
-        table(_kv(mut), hide_index=True)
+        st.table(_kv(mut).set_index("setting"))
 
 
 def _kv(d: dict) -> pd.DataFrame:
