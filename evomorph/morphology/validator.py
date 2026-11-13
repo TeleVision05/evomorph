@@ -53,14 +53,15 @@ def _check_scalar(name: str, value: object, errors: list[str]) -> None:
         errors.append(f"{name}={v:.4g} outside [{b.low:.4g}, {b.high:.4g}]")
 
 
-def _check_array(name: str, value: object, n_limbs: int, errors: list[str]) -> None:
+def _check_array(name: str, value: object, n_limbs: int | None, errors: list[str]) -> None:
+    """Per-limb array (``n_limbs`` entries) or free-length vector (``n_limbs=None``)."""
     b = GENE_BOUNDS[name]
     try:
         arr = np.asarray(value, dtype=float).ravel()
     except (TypeError, ValueError):
         errors.append(f"{name} is not a numeric array")
         return
-    if arr.size != n_limbs:
+    if n_limbs is not None and arr.size != n_limbs:
         errors.append(f"{name} has {arr.size} entries, body has {n_limbs} limbs")
     if not np.all(np.isfinite(arr)):
         errors.append(f"{name} has non-finite entries")
@@ -79,7 +80,9 @@ def validate_genome(genome: Genome) -> ValidationResult:
     n_limbs = 2 * n_pairs if n_pairs in GENE_BOUNDS["n_pairs"].values else -1
     for name in CONTROLLER_GENES:
         value = getattr(genome.controller, name, None)
-        if GENE_BOUNDS[name].per_limb:
+        if GENE_BOUNDS[name].kind == "vector":
+            _check_array(name, value, None, errors)
+        elif GENE_BOUNDS[name].per_limb:
             if n_limbs > 0:
                 _check_array(name, value, n_limbs, errors)
         else:

@@ -7,6 +7,7 @@ import json
 import math
 
 import numpy as np
+import pytest
 
 from evomorph.morphology.genome import (
     CONTROLLER_GENES,
@@ -16,6 +17,7 @@ from evomorph.morphology.genome import (
     Genome,
     MorphologyGenes,
     from_dict,
+    genome_hash,
     load_genome,
     random_genome,
     reference_hexapod,
@@ -31,9 +33,9 @@ def _assert_within_bounds(g: Genome) -> None:
     for name, b in GENE_BOUNDS.items():
         part = g.morphology if b.group == "morphology" else g.controller
         val = getattr(part, name)
-        if b.per_limb:
+        if b.per_limb or b.kind == "vector":
             arr = np.asarray(val)
-            assert arr.shape == (g.n_limbs,), name
+            assert arr.shape == ((g.n_limbs,) if b.per_limb else arr.shape), name
             assert np.all((arr >= b.low) & (arr <= b.high)), name
         elif b.is_discrete:
             assert val in b.values, name
@@ -134,3 +136,56 @@ def test_json_round_trip_is_exact(tmp_path, rng) -> None:
 def test_to_dict_is_plain_json() -> None:
     d = to_dict(reference_hexapod())
     assert from_dict(json.loads(json.dumps(d))).id == "ref-hexapod"
+
+
+def test_genomes_compare_by_value_and_hash_by_genes() -> None:
+    a, b = reference_quadruped(), reference_quadruped()
+    assert a == b  # used to raise "truth value of an array is ambiguous"
+    b.controller.phase_offsets[0] = 0.1
+    assert a != b and genome_hash(a) != genome_hash(b)
+    renamed = from_dict(to_dict(a) | {"id": "other", "parent_ids": ["x"]})
+    assert genome_hash(renamed) == genome_hash(a) and renamed != a  # same genes, other id
+    with pytest.raises(TypeError):
+        hash(a)
+
+
+def test_from_dict_rejects_typos_and_sizes_missing_arrays() -> None:
+    d = to_dict(reference_hexapod())
+    bad = json.loads(json.dumps(d))
+    bad["morphology"]["torso_lenght"] = 0.3
+    with pytest.raises(ValueError, match="torso_lenght"):
+        from_dict(bad)
+    with pytest.raises(ValueError, match="colour"):
+        from_dict(d | {"colour": "red"})
+    old = json.loads(json.dumps(d))
+    del old["controller"]["phase_offsets"], old["morphology"]["foot_length"]
+    del old["controller"]["params"]
+    g = from_dict(old)  # a file written before these genes existed
+    assert g.controller.phase_offsets.shape == (6,) and validate_genome(g).ok
+    assert g.morphology.foot_length == 0.0 and g.controller.params.size == 0
+
+
+def test_params_vector_gene_round_trips_and_is_bounded() -> None:
+    g = reference_quadruped()
+    g.controller.params = np.array([0.5, -2.0, 99.0, np.nan])
+    assert not validate_genome(g).ok
+    r = repair(g)
+    assert np.array_equal(r.controller.params, [0.5, -2.0, 10.0, 0.0])  # length kept
+    assert validate_genome(r).ok
+    assert np.array_equal(from_dict(to_dict(r)).controller.params, r.controller.params)
+
+
+def test_registering_a_controller_makes_its_kind_a_valid_gene(monkeypatch) -> None:
+    from evomorph.controllers import base
+
+    monkeypatch.setitem(GENE_BOUNDS, "kind", GENE_BOUNDS["kind"])
+    monkeypatch.setattr(base, "_REGISTRY", dict(base._REGISTRY))
+
+    @base.register_controller("mlp")
+    def _make(genome):  # pragma: no cover - only registration is under test
+        raise NotImplementedError
+
+    g = random_genome(np.random.default_rng(0), kind="mlp")
+    g.controller.params = np.zeros(12)
+    assert validate_genome(g).ok and repair(g).controller.kind == "mlp"
+    assert random_genome(np.random.default_rng(0)).controller.kind == "cpg"  # not sampled

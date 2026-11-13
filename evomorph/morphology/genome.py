@@ -15,14 +15,12 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field, replace
-from pathlib import Path
 from typing import Any
 
 import numpy as np
 
-from evomorph.utils.serialization import dump_json, load_json
-
 GAITS: tuple[str, ...] = ("alternating", "diagonal", "tripod", "metachronal")
+# Built-in controller kinds. register_controller() adds new ones to GENE_BOUNDS["kind"].
 CONTROLLER_KINDS: tuple[str, ...] = ("cpg",)
 MIN_SOLE_LENGTH = 0.01  # m; shorter foot_length values build a sphere (point) foot
 
@@ -32,8 +30,10 @@ class GeneBound:
     """Legal values of one gene.
 
     ``kind`` is ``"float"`` (continuous in [low, high]), ``"int"`` or ``"choice"``
-    (one of ``values``). ``per_limb`` genes are float arrays of length n_limbs,
-    each element bounded by [low, high].
+    (one of ``values``), or ``"vector"`` (a float array of any length, each
+    element in [low, high]; mutate element-wise and keep the length).
+    ``per_limb`` genes are float arrays of length n_limbs, each element bounded
+    by [low, high].
     """
 
     group: str  # "morphology" or "controller"
@@ -88,8 +88,9 @@ GENE_BOUNDS: dict[str, GeneBound] = {
     # at 90 the knee's first-order motion is purely lateral, so 85 is the cap.
     "lower_splay": _f(_M, 20.0, 85.0),
     # Tilts the hip axis toward the body's long axis so a forward hip swing also
-    # lifts the foot. This is what lets a one-segment (hip only) leg step rather
-    # than only scrape; +-35 deg keeps most of the swing in the walking direction.
+    # lifts the foot: one way a one-segment (hip only) leg can step rather than
+    # scrape (needed by the hexapod tripod; a four-beat quadruped walks without
+    # it). +-35 deg keeps most of the swing in the walking direction.
     "hip_axis_tilt": _f(_M, -35.0, 35.0),
     "hip_range": _f(_M, 15.0, 80.0),  # +- joint limit; <15 barely swings, >80 folds into body
     "knee_range": _f(_M, 15.0, 80.0),  # +- joint limit around the rest bend
@@ -105,6 +106,10 @@ GENE_BOUNDS: dict[str, GeneBound] = {
     "phase_offsets": _f(_C, -math.pi / 2, math.pi / 2, per_limb=True),  # rad, added to gait
     "hip_bias": _f(_C, -0.35, 0.35, per_limb=True),  # rad posture offset (~20 deg)
     "knee_bias": _f(_C, -0.35, 0.35, per_limb=True),  # rad posture offset (~20 deg)
+    # Free-length parameter vector for controllers that need one (e.g. network
+    # weights); the CPG ignores it and random CPG genomes carry none. +-10 keeps
+    # weights in a range where tanh/sigmoid units are not permanently saturated.
+    "params": GeneBound(_C, "vector", -10.0, 10.0),
 }
 
 MORPHOLOGY_GENES: tuple[str, ...] = tuple(k for k, b in GENE_BOUNDS.items() if b.group == _M)
@@ -143,9 +148,13 @@ class MorphologyGenes:
         return self.n_limbs * int(self.n_segments)
 
 
-@dataclass
+@dataclass(eq=False)
 class ControllerGenes:
-    """CPG parameters. Per-limb arrays have one entry per limb (see module doc)."""
+    """CPG parameters. Per-limb arrays have one entry per limb (see module doc).
+
+    ``==`` compares arrays element-wise (dataclass equality would raise on
+    ndarrays); instances are mutable and unhashable, use :func:`genome_hash`.
+    """
 
     kind: str = "cpg"
     gait: str = "diagonal"
@@ -156,6 +165,19 @@ class ControllerGenes:
     phase_offsets: np.ndarray = field(default_factory=lambda: np.zeros(4))
     hip_bias: np.ndarray = field(default_factory=lambda: np.zeros(4))
     knee_bias: np.ndarray = field(default_factory=lambda: np.zeros(4))
+    params: np.ndarray = field(default_factory=lambda: np.zeros(0))
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, ControllerGenes):
+            return NotImplemented
+        return all(
+            np.array_equal(np.asarray(getattr(self, n)), np.asarray(getattr(other, n)))
+            if GENE_BOUNDS[n].kind == "vector" or GENE_BOUNDS[n].per_limb
+            else getattr(self, n) == getattr(other, n)
+            for n in CONTROLLER_GENES
+        )
+
+    __hash__ = None  # type: ignore[assignment]
 
 
 @dataclass
@@ -186,7 +208,16 @@ class Genome:
 # ----------------------------------------------------------------------------
 
 
+def add_controller_kind(kind: str) -> None:
+    """Make ``kind`` a legal value of the ``kind`` gene (``register_controller`` calls this)."""
+    b = GENE_BOUNDS["kind"]
+    if kind not in b.values:
+        GENE_BOUNDS["kind"] = replace(b, values=(*b.values, kind))
+
+
 def _sample(bound: GeneBound, rng: np.random.Generator, n_limbs: int) -> Any:
+    if bound.kind == "vector":
+        return np.zeros(0)  # length is the controller's business; CPG genomes carry none
     if bound.is_discrete:
         return bound.values[int(rng.integers(len(bound.values)))]
     if bound.per_limb:
@@ -195,13 +226,17 @@ def _sample(bound: GeneBound, rng: np.random.Generator, n_limbs: int) -> Any:
 
 
 def random_genome(
-    rng: np.random.Generator, genome_id: str | None = None, generation: int = 0
+    rng: np.random.Generator,
+    genome_id: str | None = None,
+    generation: int = 0,
+    kind: str = "cpg",
 ) -> Genome:
     """Sample every gene uniformly within ``GENE_BOUNDS``.
 
-    Joint bias offsets start at zero (a neutral posture) rather than uniform, so a
-    random creature is not born crouched or splayed by an arbitrary offset; they
-    are still free to evolve within bounds.
+    The controller ``kind`` is chosen by the caller, not sampled. Joint bias
+    offsets start at zero (a neutral posture) rather than uniform, so a random
+    creature is not born crouched or splayed by an arbitrary offset; they are
+    still free to evolve within bounds.
     """
     n_pairs = _sample(GENE_BOUNDS["n_pairs"], rng, 0)
     n_limbs = 2 * n_pairs
@@ -211,7 +246,9 @@ def random_genome(
             morph[name] = _sample(GENE_BOUNDS[name], rng, n_limbs)
     ctrl: dict[str, Any] = {}
     for name in CONTROLLER_GENES:
-        ctrl[name] = _sample(GENE_BOUNDS[name], rng, n_limbs)
+        if name != "kind":
+            ctrl[name] = _sample(GENE_BOUNDS[name], rng, n_limbs)
+    ctrl["kind"] = kind
     ctrl["hip_bias"] = np.zeros(n_limbs)
     ctrl["knee_bias"] = np.zeros(n_limbs)
     if genome_id is None:
@@ -274,7 +311,10 @@ def repair(genome: Genome) -> Genome:
     for name in CONTROLLER_GENES:
         b = GENE_BOUNDS[name]
         val = getattr(c, name)
-        if b.per_limb:
+        if b.kind == "vector":
+            arr = np.asarray(val if val is not None else [], dtype=float).ravel()
+            ctrl[name] = np.clip(np.where(np.isfinite(arr), arr, 0.0), b.low, b.high)
+        elif b.per_limb:
             ctrl[name] = _resize(val, n_limbs, b)
         elif b.is_discrete:
             ctrl[name] = _snap(val, b)
@@ -367,54 +407,39 @@ def reference_hexapod() -> Genome:
 
 
 # ----------------------------------------------------------------------------
-# Serialization
+# Serialization lives in genome_io; re-exported here (the stable import path).
 # ----------------------------------------------------------------------------
 
-SCHEMA_VERSION = 1
+from evomorph.morphology.genome_io import (  # noqa: E402
+    SCHEMA_VERSION,
+    from_dict,
+    genome_hash,
+    load_genome,
+    save_genome,
+    to_dict,
+)
 
-
-def to_dict(genome: Genome) -> dict[str, Any]:
-    """JSON-safe dict. Floats keep full precision (exact round trip)."""
-    m = {name: getattr(genome.morphology, name) for name in MORPHOLOGY_GENES}
-    c: dict[str, Any] = {}
-    for name in CONTROLLER_GENES:
-        val = getattr(genome.controller, name)
-        c[name] = [float(x) for x in np.asarray(val).ravel()] if GENE_BOUNDS[name].per_limb else val
-    return {
-        "schema": SCHEMA_VERSION,
-        "id": genome.id,
-        "parent_ids": list(genome.parent_ids),
-        "generation": int(genome.generation),
-        "origin": genome.origin,
-        "morphology": {
-            k: (int(v) if isinstance(v, (int, np.integer)) else v) for k, v in m.items()
-        },
-        "controller": c,
-    }
-
-
-def from_dict(data: dict[str, Any]) -> Genome:
-    """Inverse of :func:`to_dict`. Missing genes take dataclass defaults."""
-    morph_in = dict(data.get("morphology", {}))
-    ctrl_in = dict(data.get("controller", {}))
-    for name in PER_LIMB_GENES:
-        if name in ctrl_in:
-            ctrl_in[name] = np.asarray(ctrl_in[name], dtype=float)
-    morph = MorphologyGenes(**{k: v for k, v in morph_in.items() if k in MORPHOLOGY_GENES})
-    ctrl = ControllerGenes(**{k: v for k, v in ctrl_in.items() if k in CONTROLLER_GENES})
-    return Genome(
-        id=str(data.get("id", "unnamed")),
-        morphology=morph,
-        controller=ctrl,
-        parent_ids=tuple(str(p) for p in data.get("parent_ids", ())),
-        generation=int(data.get("generation", 0)),
-        origin=str(data.get("origin", "loaded")),
-    )
-
-
-def save_genome(genome: Genome, path: str | Path) -> Path:
-    return dump_json(to_dict(genome), path)
-
-
-def load_genome(path: str | Path) -> Genome:
-    return from_dict(load_json(path))
+__all__ = [
+    "CONTROLLER_GENES",
+    "CONTROLLER_KINDS",
+    "GAITS",
+    "GENE_BOUNDS",
+    "MIN_SOLE_LENGTH",
+    "MORPHOLOGY_GENES",
+    "PER_LIMB_GENES",
+    "SCHEMA_VERSION",
+    "ControllerGenes",
+    "GeneBound",
+    "Genome",
+    "MorphologyGenes",
+    "add_controller_kind",
+    "from_dict",
+    "genome_hash",
+    "load_genome",
+    "random_genome",
+    "reference_hexapod",
+    "reference_quadruped",
+    "repair",
+    "save_genome",
+    "to_dict",
+]

@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from evomorph.morphology.generator import ActuatorLayout
-from evomorph.morphology.genome import Genome
+from evomorph.morphology.genome import Genome, add_controller_kind
 
 
 def _zeros3() -> np.ndarray:
@@ -63,10 +63,17 @@ _REGISTRY: dict[str, ControllerFactory] = {}
 
 
 def register_controller(kind: str) -> Callable[[ControllerFactory], ControllerFactory]:
-    """Decorator registering a factory ``genome -> Controller`` for ``kind``."""
+    """Decorator registering a factory ``genome -> Controller`` for ``kind``.
+
+    Registering also makes ``kind`` a legal value of the genome's ``kind`` gene
+    (``GENE_BOUNDS["kind"]``), so validation and repair accept it. A controller
+    that needs its own parameters (e.g. network weights) keeps them in
+    ``genome.controller.params``, a free-length vector gene.
+    """
 
     def deco(factory: ControllerFactory) -> ControllerFactory:
         _REGISTRY[kind] = factory
+        add_controller_kind(kind)
         return factory
 
     return deco
