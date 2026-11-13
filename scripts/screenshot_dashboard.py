@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -105,6 +106,33 @@ def shoot(page, url: str, out: Path, click: str | None = None) -> None:
     print(f"wrote {out}", flush=True)
 
 
+def check_archive_click(page, port: int, run: str) -> bool:
+    """Click the last occupied cell of the heat map; True if the shown elite changed.
+
+    AppTest cannot click a plotly chart, so this is the check that a click on
+    the chart (not only the picker below it) selects the cell.
+    """
+    page.set_viewport_size({"width": WIDTH, "height": 1400})
+    page.goto(f"http://127.0.0.1:{port}/?run={run}&section=archive")
+    page.wait_for_selector(".js-plotly-plot", timeout=PAGE_TIMEOUT_MS)
+    page.wait_for_function(IDLE_JS, timeout=PAGE_TIMEOUT_MS)
+    page.wait_for_timeout(SETTLE_MS)
+
+    def shown() -> list[str]:
+        text = page.locator('[data-testid="stMain"]').inner_text()
+        return sorted(set(re.findall(r"cell \(\d+, \d+\) · \S+", text)))
+
+    before = shown()
+    markers = page.locator(".js-plotly-plot .scatterlayer .trace .points path")
+    markers.nth(markers.count() - 1).click(force=True)
+    page.wait_for_timeout(SETTLE_MS)
+    page.wait_for_function(IDLE_JS, timeout=PAGE_TIMEOUT_MS)
+    page.wait_for_timeout(SETTLE_MS)
+    after = shown()
+    print(f"archive click check ({markers.count()} cells): {before} -> {after}", flush=True)
+    return bool(after) and after != before
+
+
 def shots(args: argparse.Namespace) -> list[tuple[str, str, str, str | None]]:
     """(file name, run, section slug, button to click first or None)."""
     ga, me = args.ga, args.me
@@ -144,6 +172,8 @@ def main() -> int:
                     continue
                 url = f"http://127.0.0.1:{port}/?run={run}&section={section}"
                 shoot(page, url, args.out / name, click)
+            clicked = check_archive_click(page, port, args.me)
+            print(f"clicking a heat-map cell selects it: {clicked}", flush=True)
             browser.close()
     finally:
         server.terminate()
