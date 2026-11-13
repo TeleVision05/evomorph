@@ -1,0 +1,369 @@
+{
+  "genome_id": "ref-quadruped",
+  "suite": "uneven-seeds",
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "aggregates": {
+    "mean_fitness": 0.27200546934541975,
+    "worst_fitness": 0.14953590436008465,
+    "failure_rate": 0.0,
+    "invalid_rate": 0.0,
+    "mean_forward_velocity": 0.41317560610284343,
+    "mean_energy_efficiency": 0.41398033850595084,
+    "mean_slip_fraction": 0.7532953101649201
+  },
+  "rows": [
+    {
+      "env": "uneven_r0.04_o20_s0",
+      "kind": "uneven",
+      "slope_deg": 0.0,
+      "roughness": 0.04,
+      "n_obstacles": 20,
+      "friction": 1.0,
+      "friction_spread": 1.0,
+      "terrain_seed": 0,
+      "runs": 3,
+      "fell": 0,
+      "invalid": 0,
+      "fitness": 0.1621705360248248,
+      "fitness_min": 0.09178895187436299,
+      "forward_velocity": 0.4155474357474748,
+      "energy_efficiency": 0.4156813540737003,
+      "slip_fraction": 0.7628887697304149,
+      "foot_slip_speed": 0.37077166797789873,
+      "env_spec": {
+        "kind": "uneven",
+        "slope_deg": 0.0,
+        "friction": 1.0,
+        "roughness": 0.04,
+        "n_obstacles": 20,
+        "seed": 0,
+        "friction_spread": 1.0
+      },
+      "per_seed": [
+        {
+          "seed": 0,
+          "fitness": 0.09178895187436299,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        },
+        {
+          "seed": 1,
+          "fitness": 0.1669590942185645,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        },
+        {
+          "seed": 2,
+          "fitness": 0.2277635619815469,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        }
+      ]
+    },
+    {
+      "env": "uneven_r0.04_o20_s1",
+      "kind": "uneven",
+      "slope_deg": 0.0,
+      "roughness": 0.04,
+      "n_obstacles": 20,
+      "friction": 1.0,
+      "friction_spread": 1.0,
+      "terrain_seed": 1,
+      "runs": 3,
+      "fell": 0,
+      "invalid": 0,
+      "fitness": 0.14953590436008465,
+      "fitness_min": 0.004152632796900852,
+      "forward_velocity": 0.3417616655458871,
+      "energy_efficiency": 0.3443875320066798,
+      "slip_fraction": 0.7529022958119068,
+      "foot_slip_speed": 0.35826295408498327,
+      "env_spec": {
+        "kind": "uneven",
+        "slope_deg": 0.0,
+        "friction": 1.0,
+        "roughness": 0.04,
+        "n_obstacles": 20,
+        "seed": 1,
+        "friction_spread": 1.0
+      },
+      "per_seed": [
+        {
+          "seed": 0,
+          "fitness": 0.004152632796900852,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        },
+        {
+          "seed": 1,
+          "fitness": 0.3963419918308148,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        },
+        {
+          "seed": 2,
+          "fitness": 0.04811308845253826,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        }
+      ]
+    },
+    {
+      "env": "uneven_r0.04_o20_s2",
+      "kind": "uneven",
+      "slope_deg": 0.0,
+      "roughness": 0.04,
+      "n_obstacles": 20,
+      "friction": 1.0,
+      "friction_spread": 1.0,
+      "terrain_seed": 2,
+      "runs": 3,
+      "fell": 0,
+      "invalid": 0,
+      "fitness": 0.41933777364774444,
+      "fitness_min": 0.3941704244046387,
+      "forward_velocity": 0.45017843995874696,
+      "energy_efficiency": 0.4532082852675349,
+      "slip_fraction": 0.7549927343955458,
+      "foot_slip_speed": 0.3663141251997961,
+      "env_spec": {
+        "kind": "uneven",
+        "slope_deg": 0.0,
+        "friction": 1.0,
+        "roughness": 0.04,
+        "n_obstacles": 20,
+        "seed": 2,
+        "friction_spread": 1.0
+      },
+      "per_seed": [
+        {
+          "seed": 0,
+          "fitness": 0.4350888043380023,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        },
+        {
+          "seed": 1,
+          "fitness": 0.3941704244046387,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        },
+        {
+          "seed": 2,
+          "fitness": 0.4287540922005923,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        }
+      ]
+    },
+    {
+      "env": "uneven_r0.04_o20_s3",
+      "kind": "uneven",
+      "slope_deg": 0.0,
+      "roughness": 0.04,
+      "n_obstacles": 20,
+      "friction": 1.0,
+      "friction_spread": 1.0,
+      "terrain_seed": 3,
+      "runs": 3,
+      "fell": 0,
+      "invalid": 0,
+      "fitness": 0.33799189605634106,
+      "fitness_min": 0.12113267196534973,
+      "forward_velocity": 0.43136229394698805,
+      "energy_efficiency": 0.43318809803276537,
+      "slip_fraction": 0.7472352989587315,
+      "foot_slip_speed": 0.37301464330872935,
+      "env_spec": {
+        "kind": "uneven",
+        "slope_deg": 0.0,
+        "friction": 1.0,
+        "roughness": 0.04,
+        "n_obstacles": 20,
+        "seed": 3,
+        "friction_spread": 1.0
+      },
+      "per_seed": [
+        {
+          "seed": 0,
+          "fitness": 0.12113267196534973,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        },
+        {
+          "seed": 1,
+          "fitness": 0.45441951791863183,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        },
+        {
+          "seed": 2,
+          "fitness": 0.4384234982850415,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        }
+      ]
+    },
+    {
+      "env": "uneven_r0.04_o20_s4",
+      "kind": "uneven",
+      "slope_deg": 0.0,
+      "roughness": 0.04,
+      "n_obstacles": 20,
+      "friction": 1.0,
+      "friction_spread": 1.0,
+      "terrain_seed": 4,
+      "runs": 3,
+      "fell": 0,
+      "invalid": 0,
+      "fitness": 0.29099123663810367,
+      "fitness_min": 0.1861811777423657,
+      "forward_velocity": 0.4270281953151199,
+      "energy_efficiency": 0.4234364231490735,
+      "slip_fraction": 0.7484574519280013,
+      "foot_slip_speed": 0.3621890205167537,
+      "env_spec": {
+        "kind": "uneven",
+        "slope_deg": 0.0,
+        "friction": 1.0,
+        "roughness": 0.04,
+        "n_obstacles": 20,
+        "seed": 4,
+        "friction_spread": 1.0
+      },
+      "per_seed": [
+        {
+          "seed": 0,
+          "fitness": 0.1861811777423657,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        },
+        {
+          "seed": 1,
+          "fitness": 0.23132909579309321,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        },
+        {
+          "seed": 2,
+          "fitness": 0.4554634363788521,
+          "fell": false,
+          "valid": true,
+          "reason": ""
+        }
+      ]
+    }
+  ],
+  "genome_hash": "8d35a0182d034d29",
+  "terrain_draws": [
+    {
+      "kind": "uneven",
+      "slope_deg": 0.0,
+      "roughness": 0.04,
+      "n_obstacles": 20,
+      "friction": 1.0,
+      "friction_spread": 1.0,
+      "seed": 0
+    },
+    {
+      "kind": "uneven",
+      "slope_deg": 0.0,
+      "roughness": 0.04,
+      "n_obstacles": 20,
+      "friction": 1.0,
+      "friction_spread": 1.0,
+      "seed": 1
+    },
+    {
+      "kind": "uneven",
+      "slope_deg": 0.0,
+      "roughness": 0.04,
+      "n_obstacles": 20,
+      "friction": 1.0,
+      "friction_spread": 1.0,
+      "seed": 2
+    },
+    {
+      "kind": "uneven",
+      "slope_deg": 0.0,
+      "roughness": 0.04,
+      "n_obstacles": 20,
+      "friction": 1.0,
+      "friction_spread": 1.0,
+      "seed": 3
+    },
+    {
+      "kind": "uneven",
+      "slope_deg": 0.0,
+      "roughness": 0.04,
+      "n_obstacles": 20,
+      "friction": 1.0,
+      "friction_spread": 1.0,
+      "seed": 4
+    }
+  ],
+  "sim": {
+    "duration": 10.0,
+    "timestep": 0.002,
+    "settle_time": 1.0,
+    "control_rate": 50.0,
+    "init_noise": 0.01,
+    "spawn_clearance": 0.005,
+    "fall_tilt_deg": 75.0,
+    "fall_contact_time": 0.25,
+    "fall_contact_window": 1.0,
+    "max_linear_speed": 5.0,
+    "max_speed_per_size": 10.0,
+    "max_angular_speed": 40.0,
+    "max_height_gain": 1.0,
+    "max_height_gain_per_size": 1.0,
+    "max_ground_penetration": 0.05,
+    "max_contact_penetration": 0.12
+  },
+  "fitness": {
+    "velocity_scale": 0.2,
+    "tilt_scale": 1.0472,
+    "lateral_ratio": 0.5,
+    "yaw_scale": 0.7,
+    "cot_scale": 2.0,
+    "slip_penalty": 0.5,
+    "airborne_allowance": 0.05,
+    "airborne_scale": 0.5,
+    "effort_scale": 0.5,
+    "smooth_scale": 3.0,
+    "still_distance": 0.1,
+    "w_progress": 1.0,
+    "w_upright": 1.0,
+    "w_lateral": 1.0,
+    "w_rotation": 1.0,
+    "w_energy": 1.0,
+    "w_slip": 1.0,
+    "w_support": 1.0,
+    "w_airborne": 1.0,
+    "w_effort": 1.0,
+    "w_smoothness": 1.0,
+    "w_fall": 1.0,
+    "w_still": 0.2,
+    "penalty_cap": 2.0
+  },
+  "mujoco_version": "4.0.1",
+  "command": "python -m evomorph robustness --reference quadruped --suite uneven-seeds --seeds 3 --workers 4 --out docs/validation/terrains"
+}

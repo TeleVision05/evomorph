@@ -116,8 +116,9 @@ def test_invalid_genome_yields_invalid_result_not_crash() -> None:
     r = evaluate(g)
     assert not r.valid and "invalid genome" in r.failure_reason
     assert r.fitness == INVALID_FITNESS and r.metrics == {}
-    r = evaluate(reference_quadruped(), env=EnvSpec(kind="slope"))
-    assert not r.valid and "not implemented" in r.failure_reason
+    # An unbuildable world (slope out of range) is an invalid result, not a crash.
+    r = evaluate(reference_quadruped(), env=EnvSpec(kind="slope", slope_deg=60.0))
+    assert not r.valid and "build failed" in r.failure_reason and "slope" in r.failure_reason
 
 
 def test_glitch_guard_marks_launch_invalid() -> None:

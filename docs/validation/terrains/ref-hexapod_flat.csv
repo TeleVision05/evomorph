@@ -1,0 +1,2 @@
+env,kind,slope_deg,roughness,n_obstacles,friction,friction_spread,terrain_seed,runs,fell,invalid,fitness,fitness_min,forward_velocity,energy_efficiency,slip_fraction,foot_slip_speed
+flat,flat,0.0,0.0,0,1.0,1.0,0,3,0,0,0.5063674442997417,0.49869395196912153,0.45645935487994843,0.4369174879283427,0.8122559323905213,0.2396634583283935

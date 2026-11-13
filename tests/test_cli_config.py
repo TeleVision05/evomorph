@@ -77,9 +77,9 @@ def test_inspect_reports_an_invalid_genome_without_a_traceback(tmp_path, capsys)
 
 def test_evaluate_does_not_claim_a_video_it_did_not_write(tmp_path, capsys) -> None:
     video = tmp_path / "slope.mp4"
-    assert (
-        main(["evaluate", "--reference", "quadruped", "--env", "slope", "--video", str(video)]) == 1
-    )
+    # Slope terrain exists now; a 60 degree slope is still out of range and cannot be built.
+    argv = ["evaluate", "--reference", "quadruped", "--env", "slope", "--slope", "60"]
+    assert main([*argv, "--video", str(video)]) == 1
     out = capsys.readouterr().out
     assert "wrote" not in out and "no video written" in out and not video.exists()
 
