@@ -91,7 +91,9 @@ SUITES: dict[str, tuple[EnvSpec, ...]] = {
     "slope": tuple(_slope(d) for d in (-20, -15, -10, -5, 0, 5, 10, 15, 20, 25, 30)),
     "friction": tuple(_mu(m) for m in (0.1, 0.2, 0.3, 0.5, 0.75, 1.0, 1.5, 2.5)),
     # Roughness alone (same bump pattern, seed 1, scaled), then obstacles alone.
-    "uneven": tuple(_uneven(r, 0, seed=1) for r in (0.0, 0.02, 0.04, 0.06, 0.08))
+    # 0.12-0.20 were added after the first validation run showed no speed effect
+    # up to 0.08 m on either reference (docs/TERRAINS.md); 0.20 is MAX_ROUGHNESS.
+    "uneven": tuple(_uneven(r, 0, seed=1) for r in (0.0, 0.02, 0.04, 0.06, 0.08, 0.12, 0.16, 0.2))
     + tuple(_uneven(0.0, n, seed=1) for n in (10, 20, 40)),
     # One uneven setting across five terrain seeds: how much the layout alone matters.
     "uneven-seeds": tuple(_uneven(0.04, 20, seed=s) for s in range(5)),
@@ -103,7 +105,7 @@ SUITE_DOCS: dict[str, str] = {
     "flat": "flat ground, friction 1",
     "slope": "slope sweep -20..+30 deg (uphill > 0)",
     "friction": "uniform friction sweep 0.1..2.5",
-    "uneven": "roughness sweep 0..0.08 m, then 10/20/40 obstacles on flat",
+    "uneven": "roughness sweep 0..0.2 m, then 10/20/40 obstacles on flat",
     "uneven-seeds": "roughness 0.04 m + 20 obstacles over terrain seeds 0-4",
 }
 
