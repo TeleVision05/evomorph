@@ -23,7 +23,12 @@ from evomorph.morphology.generator import (
 )
 from evomorph.morphology.genome import Genome
 from evomorph.morphology.validator import ModelCompileError, compile_model
-from evomorph.simulation.environment import EnvSpec, WorldFragments, build_world
+from evomorph.simulation.environment import (
+    EnvSpec,
+    WorldFragments,
+    build_world,
+    fit_clip_planes,
+)
 
 # Geom classes for contact bookkeeping (``Body.geom_class``).
 GEOM_GROUND, GEOM_FOOT, GEOM_LIMB, GEOM_TORSO = 0, 1, 2, 3
@@ -89,6 +94,7 @@ def build_body(genome: Genome, env: EnvSpec, sim: SimConfig) -> Body:
     if model.nu != layout.n_actuators:
         raise ModelCompileError(f"model has {model.nu} actuators, layout {layout.n_actuators}")
     _check_geom_order(model)
+    fit_clip_planes(model)  # rendering only: big terrain must not clip the camera's foreground
     jid = model.actuator_trnid[:, 0]
     foot_of_geom = np.full(model.ngeom, -1, dtype=int)
     for limb in layout.limbs:

@@ -157,6 +157,16 @@ def test_landing_is_flat_and_covers_the_largest_rest_footprint() -> None:
     assert np.max(np.abs(pos[:, 1]) + reach) < terrain.PAD_HALF_Y
 
 
+@pytest.mark.parametrize("name", sorted(KIND_SPECS))
+def test_cameras_do_not_clip_the_ground_near_the_creature(name) -> None:
+    """MuJoCo scales the clip planes by the model extent, which 120 m terrain boxes
+    inflate to ~200 m: the near plane moved to ~2 m and cut the ground out of the
+    tracking camera's foreground (seen in docs/media/terrains renders, 2026-11-13)."""
+    m = build_body(configured_genome(2, 2), _with_seed(KIND_SPECS[name], 0), SimConfig()).model
+    near, far = m.vis.map.znear * m.stat.extent, m.vis.map.zfar * m.stat.extent
+    assert near <= 0.1 and far >= 2 * terrain.COURSE_HALF_LENGTH
+
+
 def test_course_outlasts_the_speed_cap() -> None:
     sim = SimConfig()
     reach = sim.max_linear_speed * (sim.settle_time + sim.duration)

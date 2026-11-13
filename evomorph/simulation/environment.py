@@ -90,6 +90,20 @@ class WorldFragments:
         return self.spawn_height if self.height_at is None else float(self.height_at(x, y))
 
 
+# Camera clip planes in metres. MuJoCo scales them by the model extent, which
+# 120 m terrain boxes inflate to ~200 m, pushing the near plane to ~2 m and
+# cutting the ground out of the tracking camera's foreground. Fixed distances
+# instead: 5 cm is closer than any camera sits to the ground; 300 m covers the
+# whole course (+-60 m) from anywhere on it.
+CLIP_NEAR, CLIP_FAR = 0.05, 300.0
+
+
+def fit_clip_planes(model) -> None:
+    """Set the model's visual clip planes to CLIP_NEAR / CLIP_FAR metres (rendering only)."""
+    model.vis.map.znear = CLIP_NEAR / model.stat.extent
+    model.vis.map.zfar = CLIP_FAR / model.stat.extent
+
+
 def _ground_attrs(friction: float) -> str:
     # condim 3 = sliding friction only; torsional/rolling friction would let a
     # spinning foot grip unrealistically on a hard floor.
