@@ -203,3 +203,68 @@ best fitness (1.021 vs 0.828). MAP-Elites' champion is the better gripper
 (slip 0.36 vs 0.70) and more efficient (0.65 vs 0.53) but half as fast
 (0.30 vs 0.63 m/s). Several seeds per condition are needed before either
 algorithm can be called better.
+
+### 3. Does the diversity mechanism do anything?
+
+Same config, seed and budget with it switched off:
+`python -m evomorph evolve --config configs/quick.yaml --no-diversity --name quick_ga_joint_s0_nodiv`
+(44 generations, 6000 simulations, 657.5 s). Generation 0 is identical in
+both runs (same random draws), so the curves start together. Plots:
+`scripts/plot_runs.py --out docs/media/evolution/plots results/quick_ga_joint_s0
+results/quick_ga_joint_s0_nodiv results/quick_me_joint_s0` →
+[diversity](media/evolution/plots/diversity.png),
+[fitness](media/evolution/plots/fitness.png), [QD](media/evolution/plots/qd.png).
+
+| sims | | best | mean | gene distance | body plans | behaviour spread | coverage | QD-score |
+|---|---|---|---|---|---|---|---|---|
+| ~1500 | on | +0.750 | -0.057 | 0.274 | 8 | 0.358 | 38% | 128.0 |
+| | off | +0.497 | +0.075 | 0.094 | 3 | 0.289 | 34% | 114.7 |
+| ~3000 | on | +0.750 | -0.015 | 0.262 | 8 | 0.371 | 50% | 172.7 |
+| | off | +1.218 | +0.193 | 0.126 | 3 | 0.408 | 50% | 177.3 |
+| ~4500 | on | +0.760 | -0.059 | 0.258 | 8 | 0.383 | 57% | 198.0 |
+| | off | +1.301 | +0.232 | 0.118 | 4 | 0.452 | 59% | 215.5 |
+| 6000 | on | +1.021 | +0.123 | 0.226 | 8 | 0.501 | 65% | 227.9 |
+| | off | +1.588 | +0.598 | 0.083 | 1 | 0.285 | 68% | 252.3 |
+
+It does what it is built to do: after the first 1500 simulations the
+population keeps a mean gene distance of 0.255 (vs 0.117 without) and all 8
+body plans in every generation (vs 3.5 on average without, down to a single
+plan at 3318 and 6000 simulations). Behaviour spread, though, is not
+consistently higher with it.
+
+**Negative result for this seed:** without diversity the GA found the better
+walker. Its champion `g0038-028` ([video](media/evolution/ga_nodiv_champion.mp4),
+[frames](media/evolution/ga_nodiv_champion_sheet.png)) is a tall-legged
+hexapod in an alternating tripod at 1.77 Hz: fitness +1.588 (per run +1.520,
++1.604, +1.641; held-out seeds +1.602), about 7.9 m in 10 s, foot support
+1.000, airborne 0.0-0.8%, height gain 2 cm, tilt 2 degrees, slip 0.41-0.64.
+It walks on its feet; no exploit found. Its archive coverage and QD-score are
+also higher. With one seed per condition this does not show that diversity
+hurts, but it does show the mechanism, as configured (sharing radius 0.15,
+one elite per body plan, 5% immigrants), spends a large share of the
+population on plans that are not competitive at this budget: mean fitness
+stays between -0.12 and +0.12 after the first 1500 simulations with it,
+against +0.01 to +0.60 without.
+
+### 4. Throughput and practical budgets
+
+| measurement | command | result |
+|---|---|---|
+| 404 independent simulations | `scripts/descriptor_probe.py --n 200 --seed 7 --workers 6` | 10.1/s (load average 26-33); an earlier identical probe on a quieter machine: 17.2/s |
+| GA, 6000 simulations | section 1 | 13.8/s (433.8 s) |
+| GA without diversity, 6000 | section 3 | 9.1/s (657.5 s) |
+| MAP-Elites, 6000 | section 2 | 8.3/s (722.6 s), load average up to 56 |
+
+One simulation is a 1 s settle plus a 10 s run (about 0.2 s of CPU on an idle
+core). On this 12-core laptop, shared with the owner's work and capped at 6
+workers, plan on 8-17 simulations/s:
+
+| budget (simulations) | wall time at 8-17/s | use |
+|---|---|---|
+| 6000 | 6-12 min | `quick.yaml`: one run per condition |
+| 30000 | 30-60 min | `research.yaml`: one condition, one seed |
+| 12 x 30000 | 6-12 h | 3 modes + MAP-Elites, 3 seeds each: overnight |
+
+One seed per condition (as above) is enough to see mechanisms work and too
+few to rank algorithms; the comparisons in sections 2 and 3 need at least 3
+seeds per condition, which is what the 12-run overnight budget buys.
