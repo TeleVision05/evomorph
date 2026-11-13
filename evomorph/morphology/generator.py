@@ -12,7 +12,8 @@ Limb pairs sit on the torso's side walls at mid-height, evenly spaced front
           -> shin_<tag>   (hinge knee_<tag>)  capsule along d_lower, foot at its end
     (one-segment limbs: no shin; the foot sits at the end of the thigh)
 
-The foot is a sphere of ``foot_radius``, or a fore-aft capsule sole of that
+The foot is a sphere of ``foot_radius`` (at least 1.1 x the leg radius, see
+``foot_radius()``), or a fore-aft capsule sole of that
 radius when ``foot_length`` is long enough (``sole_length`` caps it so that
 neighbouring feet never overlap at rest). A biped needs the sole: its two point
 feet share one x, a line of support that tips like a seesaw (measured: 150/150
@@ -200,6 +201,23 @@ def hip_standoff(genome: Genome) -> float:
     return max(0.0, m.limb_thickness + 0.002 - sideways)
 
 
+# A foot is built at least this much fatter than its leg, so the foot (not the
+# rounded leg tip) is the lowest point of the limb and carries the stance load.
+FOOT_OVER_LEG = 1.1
+
+
+def foot_radius(genome: Genome) -> float:
+    """Built foot radius (m): ``foot_radius``, or 1.1 x the leg radius if that is larger.
+
+    When the leg capsule was thicker than the foot, its end cap reached the
+    ground first and the creature stood on its shin tips: physically a foot, but
+    counted as shin contact (measured: median foot support 0.14 for the 48 such
+    upright creatures of a 300-genome sweep, against 1.0 for the rest).
+    """
+    m = genome.morphology
+    return max(m.foot_radius, FOOT_OVER_LEG * m.limb_thickness)
+
+
 def sole_length(genome: Genome) -> float:
     """Built sole length (m): ``foot_length`` capped so neighbouring feet do not overlap.
 
@@ -211,7 +229,7 @@ def sole_length(genome: Genome) -> float:
     length = m.foot_length
     if m.n_pairs > 1:
         spacing = 0.85 * m.torso_length / (m.n_pairs - 1)
-        length = min(length, spacing - 2.0 * m.foot_radius - 0.004)
+        length = min(length, spacing - 2.0 * foot_radius(genome) - 0.004)
     return length if length >= MIN_SOLE_LENGTH else 0.0
 
 
@@ -231,7 +249,7 @@ def estimate_mass(genome: Genome) -> float:
     per_limb = _capsule_mass(m.limb_thickness, m.upper_limb_length, rho)
     if m.n_segments == 2:
         per_limb += _capsule_mass(m.limb_thickness, m.lower_limb_length, rho)
-    per_limb += _capsule_mass(m.foot_radius, sole_length(genome), rho)
+    per_limb += _capsule_mass(foot_radius(genome), sole_length(genome), rho)
     return torso + m.n_limbs * per_limb
 
 
@@ -257,15 +275,14 @@ def _v(a: np.ndarray) -> str:
 
 def _foot_xml(genome: Genome, tag: str, centre: np.ndarray, indent: str) -> str:
     """A sphere foot, or a fore-aft capsule sole when ``foot_length`` is long enough."""
-    m = genome.morphology
     if not has_sole(genome):
         return (
-            f'{indent}<geom name="foot_{tag}" type="sphere" size="{m.foot_radius:.6g}" '
+            f'{indent}<geom name="foot_{tag}" type="sphere" size="{foot_radius(genome):.6g}" '
             f'pos="{_v(centre)}" class="foot"/>'
         )
     half = np.array([0.5 * sole_length(genome), 0.0, 0.0])
     return (
-        f'{indent}<geom name="foot_{tag}" type="capsule" size="{m.foot_radius:.6g}" '
+        f'{indent}<geom name="foot_{tag}" type="capsule" size="{foot_radius(genome):.6g}" '
         f'fromto="{_v(centre - half)} {_v(centre + half)}" class="foot"/>'
     )
 

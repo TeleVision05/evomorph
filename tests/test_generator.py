@@ -12,6 +12,7 @@ from evomorph.morphology.generator import (
     build_mjcf,
     describe_layout,
     estimate_mass,
+    foot_radius,
     hip_standoff,
     limb_tag,
     sole_length,
@@ -178,6 +179,20 @@ def test_sole_is_capped_so_neighbouring_feet_never_overlap() -> None:
     assert not any("foot" in e for e in _exclusions(build_mjcf(crowded)))
     tiny = configured_genome(4, 2, torso_length=0.15, foot_length=0.15, foot_radius=0.02)
     assert sole_length(tiny) == 0.0  # no room: point feet
+
+
+def test_foot_is_never_thinner_than_its_leg() -> None:
+    """Sweep case rnd0-0211: legs fatter than feet stood on their shin tips (support 0.47)."""
+    from evomorph.simulation.evaluator import evaluate
+
+    g = configured_genome(2, 2, limb_thickness=0.034, foot_radius=0.02)
+    assert foot_radius(g) == pytest.approx(1.1 * 0.034)
+    model = compile_model(build_mjcf(g))
+    gid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_GEOM, "foot_0L")
+    assert model.geom_size[gid][0] == pytest.approx(foot_radius(g))
+    r = evaluate(g, sim=SimConfig(duration=3.0))
+    assert r.valid and r.metrics["foot_support_fraction"] > 0.95, r.metrics
+    assert foot_radius(reference_quadruped()) == reference_quadruped().morphology.foot_radius
 
 
 def test_random_genomes_always_compile(rng) -> None:
