@@ -6,11 +6,11 @@ import streamlit as st
 
 from evomorph.visualization import dashboard_plots as plots
 from evomorph.visualization.dashboard_analysis import SUCCESS_DISTANCE
-from evomorph.visualization.dashboard_common import Ctx
+from evomorph.visualization.dashboard_common import Ctx, chart
 
 
 def _chart(fig, key: str) -> None:
-    st.plotly_chart(fig, width="stretch", key=key)
+    chart(fig, key)
 
 
 def _fitness(ctx: Ctx, x: str) -> None:

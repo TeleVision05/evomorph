@@ -132,6 +132,21 @@ def images(ctx: Ctx, records: list[dict[str, Any]], kind: str, captions: list[st
                 st.image(str(path), caption=cap, width="stretch")
 
 
+ROW_PX = 35  # Streamlit's dataframe row height
+MAX_TABLE_PX = 1300  # about 36 rows; longer tables scroll inside themselves
+
+
+def table(df, **kwargs) -> None:
+    """A dataframe tall enough to show every row (up to MAX_TABLE_PX), so nothing hides."""
+    height = min(ROW_PX * (len(df) + 1) + 3, MAX_TABLE_PX)
+    st.dataframe(df, width="stretch", height=height, **kwargs)
+
+
+def chart(fig, key: str, **kwargs) -> Any:
+    """Plotly chart with our own palette (theme=None keeps Streamlit from recolouring it)."""
+    return st.plotly_chart(fig, width="stretch", key=key, theme=None, **kwargs)
+
+
 def friendly(problem: Exception) -> None:
     st.error(str(problem))
     st.caption("Other runs can still be opened from the sidebar.")

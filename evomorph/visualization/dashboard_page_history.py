@@ -7,7 +7,7 @@ import streamlit as st
 
 from evomorph.visualization import dashboard_analysis as an
 from evomorph.visualization import dashboard_data as dd
-from evomorph.visualization.dashboard_common import Ctx, images, select_creature
+from evomorph.visualization.dashboard_common import Ctx, images, select_creature, table
 from evomorph.visualization.dashboard_describe import short_label
 
 
@@ -61,7 +61,7 @@ def render(ctx: Ctx) -> None:
     images(ctx, pair, "thumb", caps)
     records = an.step_records(ctx.run, step)
     st.subheader(f"Everyone recorded in {label} {step} ({len(records)})")
-    st.dataframe(_population_table(records), hide_index=True, width="stretch")
+    table(_population_table(records), hide_index=True)
     ids = [r["id"] for r in records]
     if ids:
         pick = st.selectbox("Inspect one of them", ids, key="history_pick")

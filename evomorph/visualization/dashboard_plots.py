@@ -62,13 +62,19 @@ def fitness_progress(metrics: pd.DataFrame, x: str) -> go.Figure:
     fig = go.Figure()
     xs = metrics[x]
     if {"p10_fitness", "p90_fitness"} <= set(metrics.columns):
-        fig.add_trace(go.Scatter(x=xs, y=metrics["p90_fitness"], line={"width": 0}, name="p90"))
+        fig.add_trace(
+            go.Scatter(
+                x=xs, y=metrics["p90_fitness"], mode="lines", line={"width": 0},
+                name="p90", showlegend=False, hoverinfo="skip",
+            )
+        )  # fmt: skip
         fig.add_trace(
             go.Scatter(
                 x=xs,
                 y=metrics["p10_fitness"],
                 fill="tonexty",
                 fillcolor="rgba(57,135,229,0.15)",
+                mode="lines",
                 line={"width": 0},
                 name="p10-p90 band",
             )

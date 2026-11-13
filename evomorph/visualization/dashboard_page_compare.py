@@ -10,7 +10,14 @@ import streamlit as st
 from evomorph.visualization import dashboard_data as dd
 from evomorph.visualization import dashboard_media as media
 from evomorph.visualization.dashboard_analysis import body_plan_of
-from evomorph.visualization.dashboard_common import Ctx, images, other_ctx, select_creature
+from evomorph.visualization.dashboard_common import (
+    Ctx,
+    chart,
+    images,
+    other_ctx,
+    select_creature,
+    table,
+)
 from evomorph.visualization.dashboard_plots import comparison_bars
 
 # Bars keep one colour per creature in fixed palette order; four creatures stay
@@ -67,7 +74,8 @@ def _metrics_table(picked: list[tuple[str, Ctx, dict[str, Any]]]) -> pd.DataFram
     for k in COMPARE_METRICS:
         rows[k] = [(r.get("metrics") or {}).get(k) for _, _, r in picked]
     cols = [f"{i + 1}. {r['id']}" for i, (_, _, r) in enumerate(picked)]
-    return pd.DataFrame(rows, index=cols).T.astype(str)
+    df = pd.DataFrame(rows, index=cols).T
+    return df.map(lambda v: f"{v:.4g}" if isinstance(v, float) else str(v))
 
 
 def _value(rec: dict[str, Any], metric: str) -> float:
@@ -125,12 +133,12 @@ def render(ctx: Ctx) -> None:
                 "Inspect", key=f"cmp_open_{i}", on_click=select_creature,
                 args=(c.entry.name, r["id"], "Creature inspection"),
             )  # fmt: skip
-    st.dataframe(_metrics_table(picked), width="stretch")
+    table(_metrics_table(picked))
     names = [f"{i + 1}. {r['id']}" for i, (_, _, r) in enumerate(picked)]
     grid = st.columns(3)
     for j, metric in enumerate(("fitness", *COMPARE_METRICS[:5])):
         vals = [_value(r, metric) for _, _, r in picked]
         with grid[j % 3]:
-            st.plotly_chart(comparison_bars(names, vals, metric), width="stretch", key=f"cb{j}")
+            chart(comparison_bars(names, vals, metric), f"cb{j}")
     st.subheader("Clips side by side")
     _clips(picked)

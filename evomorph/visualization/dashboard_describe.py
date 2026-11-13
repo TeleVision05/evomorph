@@ -39,21 +39,18 @@ UNITS = {
 
 
 def body_facts(genome: Genome) -> dict[str, str]:
-    """Headline numbers of the built body."""
+    """Headline numbers of the built body (short values; they are shown as tiles)."""
     m = genome.morphology
+    sole = sole_length(genome)
     return {
-        "body plan": f"{body_plan(genome)} (limbs x segments)",
-        "limbs": f"{genome.n_limbs} ({m.n_pairs} symmetric pairs)",
-        "segments per limb": str(m.n_segments),
+        "body plan (limbs x segments)": body_plan(genome),
+        "limbs (symmetric pairs)": f"{genome.n_limbs} ({m.n_pairs})",
         "actuated joints": str(genome.n_joints),
         "estimated mass": f"{estimate_mass(genome):.2f} kg",
         "limb reach": f"{limb_reach(genome):.3f} m",
         "servo torque limit": f"{torque_limit(genome):.2f} N m",
-        "foot": (
-            f"capsule sole {sole_length(genome):.3f} m, radius {foot_radius(genome):.3f} m"
-            if sole_length(genome) > 0
-            else f"sphere, radius {foot_radius(genome):.3f} m"
-        ),
+        "foot": f"sole {sole:.3f} m" if sole > 0 else "sphere",
+        "foot radius (as built)": f"{foot_radius(genome):.3f} m",
     }
 
 

@@ -9,7 +9,7 @@ import pandas as pd
 import streamlit as st
 
 from evomorph.visualization import dashboard_data as dd
-from evomorph.visualization.dashboard_common import Ctx, images, select_creature
+from evomorph.visualization.dashboard_common import Ctx, images, select_creature, table
 
 # The strip shows every change of champion; a long run can change it dozens of
 # times, so at most this many evenly spaced changes (always including the
@@ -28,11 +28,20 @@ def _tiles(ctx: Ctx) -> None:
     c = st.columns(6)
     c[0].metric("Generation / batch", int(last["generation"]) if last is not None else "none yet")
     used = int(last["sims"]) if last is not None else 0
-    c[1].metric("Simulations used", f"{used:,}", f"of {budget:,}" if budget else None, "off")
+    c[1].metric("Simulations used", f"{used:,} / {budget:,}" if budget else f"{used:,}")
     evaluated = int(m["evaluations"].sum()) if "evaluations" in m.columns else 0
     c[2].metric("Individuals evaluated", f"{evaluated:,}")
-    c[3].metric("Best fitness", _fmt(last["champion_fitness"]) if last is not None else "n/a")
-    c[4].metric("Mean fitness", _fmt(last["mean_fitness"]) if last is not None else "n/a")
+    c[3].metric(
+        "Best fitness",
+        _fmt(last["champion_fitness"]) if last is not None else "n/a",
+        help="The champion: the best valid creature found so far.",
+    )
+    what = "population" if run.algorithm == "ga" else "archive elites"
+    c[4].metric(
+        "Mean fitness",
+        _fmt(last["mean_fitness"]) if last is not None else "n/a",
+        help=f"Mean over the valid {what} after the latest step.",
+    )
     if last is not None and "archive_cells" in m.columns:
         n = ctx.run.archive_spec.n_cells
         c[5].metric("Archive occupancy", f"{int(last['archive_cells'])} / {n}")
@@ -60,10 +69,10 @@ def _settings(ctx: Ctx) -> None:
             else (ctx.run.config.get("map_elites") or {}).get("batch_size"),
             "diversity mechanism": div.get("method", "n/a"),
         }
-        st.dataframe(_kv(rows), hide_index=True, width="stretch")
+        table(_kv(rows), hide_index=True)
     with right:
         st.markdown("**Mutation settings** (fixed for the whole run)")
-        st.dataframe(_kv(mut), hide_index=True, width="stretch")
+        table(_kv(mut), hide_index=True)
 
 
 def _kv(d: dict) -> pd.DataFrame:

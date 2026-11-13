@@ -9,7 +9,7 @@ import streamlit as st
 
 from evomorph.evolution.archive import qd_offset_for
 from evomorph.visualization import dashboard_analysis as an
-from evomorph.visualization.dashboard_common import Ctx, images, select_creature
+from evomorph.visualization.dashboard_common import Ctx, chart, images, select_creature, table
 from evomorph.visualization.dashboard_plots import archive_heatmap
 
 PICK = "archive_cell"  # session key of the cell picker
@@ -86,7 +86,7 @@ def _elite(ctx: Ctx, view: an.ArchiveView, cell: tuple[int, int]) -> None:
     with right:
         rows = [{"metric": k, "value": c.metrics.get(k)} for k in ELITE_METRICS]
         rows.insert(0, {"metric": "fitness", "value": c.fitness})
-        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+        table(pd.DataFrame(rows), hide_index=True)
         st.button(
             "Open this elite in creature inspection",
             on_click=select_creature,
@@ -112,7 +112,7 @@ def render(ctx: Ctx) -> None:
         st.session_state[PICK] = labels[cells[0]]
     chosen = next(k for k, v in labels.items() if v == st.session_state[PICK])
     fig = archive_heatmap(view, chosen)
-    st.plotly_chart(fig, key=CHART, on_select="rerun", selection_mode="points", width="stretch")
+    chart(fig, CHART, on_select="rerun", selection_mode="points")
     st.selectbox("Occupied cell (best first)", list(labels.values()), key=PICK)
     _elite(ctx, view, chosen)
     plans = Counter(an.body_plan_of(ctx.record(c.genome_id) or {}) for c in view.cells.values())

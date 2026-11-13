@@ -10,7 +10,7 @@ import streamlit as st
 from evomorph.visualization import dashboard_data as dd
 from evomorph.visualization import dashboard_describe as desc
 from evomorph.visualization import dashboard_media as media
-from evomorph.visualization.dashboard_common import SELECTED, Ctx, images
+from evomorph.visualization.dashboard_common import SELECTED, Ctx, chart, images, table
 from evomorph.visualization.dashboard_plots import lineage_figure
 
 LINEAGE_DEPTH = 12  # generations back; enough to see a quick run's whole ancestry
@@ -64,12 +64,12 @@ def _body(ctx: Ctx, rec: dict[str, Any]) -> None:
     left, right = st.columns(2)
     with left:
         st.markdown("**Body proportions (morphology genes)**")
-        st.dataframe(desc.morphology_table(genome), hide_index=True, width="stretch")
+        table(desc.morphology_table(genome), hide_index=True)
     with right:
         st.markdown("**Controller parameters**")
-        st.dataframe(desc.controller_table(genome), hide_index=True, width="stretch")
+        table(desc.controller_table(genome), hide_index=True)
         st.markdown("**Joints and per-limb controller genes**")
-        st.dataframe(desc.joint_table(genome), hide_index=True, width="stretch")
+        table(desc.joint_table(genome), hide_index=True)
 
 
 def _scores(rec: dict[str, Any]) -> None:
@@ -78,20 +78,20 @@ def _scores(rec: dict[str, Any]) -> None:
     a, b = st.columns([1, 2])
     with a:
         st.markdown("Per evaluation run")
-        st.dataframe(desc.run_table(rec), hide_index=True, width="stretch")
+        table(desc.run_table(rec), hide_index=True)
         st.markdown("Fitness terms (they sum to the fitness)")
-        st.dataframe(desc.terms_table(rec), hide_index=True, width="stretch")
+        table(desc.terms_table(rec), hide_index=True)
     with b:
         st.markdown("Every metric (mean over the runs)")
-        st.dataframe(desc.metric_table(rec), hide_index=True, width="stretch", height=420)
+        table(desc.metric_table(rec), hide_index=True)
 
 
 def _lineage(ctx: Ctx, rec: dict[str, Any]) -> None:
     rows = dd.lineage(ctx.index, rec["id"], LINEAGE_DEPTH)
     known = [r for r in rows if r.get("recorded")]
     if len(known) > 1:
-        st.plotly_chart(lineage_figure(rows), width="stretch", key="lineage_chart")
-    table = pd.DataFrame(
+        chart(lineage_figure(rows), "lineage_chart")
+    ancestors = pd.DataFrame(
         [
             {
                 "generations back": r["depth"],
@@ -104,7 +104,7 @@ def _lineage(ctx: Ctx, rec: dict[str, Any]) -> None:
             for r in rows
         ]
     )
-    st.dataframe(table, hide_index=True, width="stretch")
+    table(ancestors, hide_index=True)
 
 
 def _clip(ctx: Ctx, rec: dict[str, Any]) -> None:
@@ -120,7 +120,8 @@ def _clip(ctx: Ctx, rec: dict[str, Any]) -> None:
     if path is None:
         st.caption("No clip rendered yet. Clips are cached, so each is made only once.")
         return
-    st.video(str(path))
+    left, _ = st.columns([3, 2])  # full width makes a 480 px clip blurry and very tall
+    left.video(str(path))
     meta = media.clip_meta(path) or {}
     stored = (rec.get("seed_fitness") or [None])[0]
     again = meta.get("fitness")
