@@ -28,8 +28,9 @@ Joint axis conventions (checked numerically in tests/test_generator.py):
 
 * hip: axis = normalise(d_upper x x_hat), tilted toward x_hat by ``hip_axis_tilt``.
   A positive hip angle swings the foot forward (+x) on both sides; a positive
-  tilt makes the forward swing also lift the foot, which is what lets a hip-only
-  leg take steps instead of only scraping.
+  tilt makes the forward swing also lift the foot, one way a hip-only leg can
+  take steps instead of only scraping (the hexapod tripod needs it; a hip-only
+  quadruped also walks untilted with the four-beat gait, see the tests).
 * knee: axis = +x on the left, -x on the right. A positive knee angle lifts the
   foot (and moves it outward) on both sides.
 

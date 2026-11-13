@@ -62,8 +62,23 @@ def test_every_configuration_simulates(n_pairs, n_segments) -> None:
     assert all(math.isfinite(v) for v in r.metrics.values())
 
 
-def test_one_segment_creature_can_walk() -> None:
-    """Hip-only legs walk only through the tilted hip axis; zero tilt makes no progress."""
+def test_one_segment_quadruped_can_walk() -> None:
+    """A hip-only quadruped walks with the four-beat ("tripod") gait even with zero tilt.
+
+    Measured 2026-11-13: hip_splay 65, upper 0.25 m, tilt 0 -> 4.14 m, lateral 0.04 m.
+    The builder's tilted diagonal variant (splay 30, tilt +20) goes 1.79 m but
+    turns 1.5 rad; with the hexapod recipe (splay 50) it manages only 0.34 m.
+    """
+    base = reference_quadruped()
+    m = replace(base.morphology, n_segments=1, hip_splay=65.0, upper_limb_length=0.25,
+                hip_axis_tilt=0.0)  # fmt: skip
+    walker = replace(base, morphology=m, controller=replace(base.controller, gait="tripod"))
+    _walks_straight(evaluate(walker))
+    assert evaluate(walker).metrics["foot_support_fraction"] > 0.99
+
+
+def test_one_segment_hexapod_walks_through_hip_tilt() -> None:
+    """For the hexapod tripod the tilted hip axis is what makes progress: 0 tilt shuffles."""
     base = reference_hexapod()
 
     def with_tilt(tilt: float):
