@@ -143,7 +143,7 @@ def shots(args: argparse.Namespace) -> list[tuple[str, str, str, str | None]]:
         ("creature_inspection.png", ga, "creature", "Render a clip"),
         ("map_elites_archive.png", me, "archive", None),
         ("statistics.png", ga, "stats", None),
-        ("comparison.png", ga, "compare", None),
+        ("comparison.png", ga, "compare", "missing clip"),
         ("generation_history.png", me, "history", None),
     ]
 
