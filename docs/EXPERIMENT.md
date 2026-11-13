@@ -155,8 +155,9 @@ second (0.5 = no difference; 0.56/0.64/0.71 = small/medium/large).
   otherwise "not shown".
 * **Few seeds.** With n seeds per condition the smallest two-sided p the exact
   test can produce is 2 / C(2n, n): 0.33 for n = 2, 0.10 for n = 3, 0.029 for
-  n = 4, 0.0079 for n = 5. With 3 or fewer seeds nothing can be significant,
-  and `summary.md` says the evidence is weak.
+  n = 4, 0.0079 for n = 5. Holm multiplies the smallest primary p by 6, so
+  with 4 or fewer seeds no primary comparison can be significant, and
+  `summary.md` says the evidence is weak.
 
 ## B's baseline on every limb count
 
@@ -181,8 +182,9 @@ m/s, but on these bodies it moves **no one-segment body at all** and the
 two-segment biped falls. A one-segment leg needs its hip axis tilted to lift
 the foot while it swings (the core's `hip_axis_tilt` gene, 0 on the reference
 quadruped). B can evolve that gene, and the quick run's B champion of seed 0
-is a 4x1 that does move (0.443 m/s on training terrain, 0.373 held-out), but B starts with one-segment bodies at a
-disadvantage that C, which can also tune the gait, does not have. This is part
+is a 4x1 that does move (0.443 m/s on training terrain, 0.373 held-out), but
+B starts with one-segment bodies at a disadvantage that C, which can also tune
+the gait, does not have. This is part
 of what freezing the controller costs, and it is why B's body-plan diversity
 should be read together with its fitness.
 
