@@ -90,6 +90,7 @@ def _clips(picked: list[tuple[str, Ctx, dict[str, Any]]]) -> None:
         with st.spinner("Re-simulating and recording offscreen..."):
             for c, t in missing:
                 media.render(c.cache, [t], "clip")
+        st.rerun()  # redraw with the new clips and without the button
     cols = st.columns(len(targets))
     for i, (c, t) in enumerate(targets):
         path = media.cached(c.cache, t, "clip")

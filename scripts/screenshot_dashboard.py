@@ -87,6 +87,22 @@ HEIGHT_JS = """() => {
 }"""
 
 
+TOP_JS = "() => document.querySelectorAll('*').forEach(e => { if (e.scrollTop) e.scrollTop = 0; })"
+
+
+def stable_height(page, tries: int = 15) -> int:
+    """Content height once two readings 1 s apart agree (a rerun may still be drawing)."""
+    last = -1
+    for _ in range(tries):
+        page.wait_for_function(IDLE_JS, timeout=PAGE_TIMEOUT_MS)
+        height = int(page.evaluate(HEIGHT_JS))
+        if height == last:
+            return height
+        last = height
+        page.wait_for_timeout(1000)
+    return last
+
+
 def shoot(page, url: str, out: Path, click: str | None = None) -> None:
     page.set_viewport_size({"width": WIDTH, "height": 1000})
     page.goto(url)
@@ -99,8 +115,9 @@ def shoot(page, url: str, out: Path, click: str | None = None) -> None:
         page.wait_for_timeout(1500)
         page.wait_for_function(IDLE_JS, timeout=PAGE_TIMEOUT_MS)
     page.wait_for_timeout(SETTLE_MS)
-    height = page.evaluate(HEIGHT_JS)
+    height = stable_height(page)
     page.set_viewport_size({"width": WIDTH, "height": min(int(height) + 40, MAX_HEIGHT)})
+    page.evaluate(TOP_JS)  # a button click may have scrolled the page
     page.wait_for_timeout(SETTLE_MS)
     page.screenshot(path=str(out))
     print(f"wrote {out}", flush=True)

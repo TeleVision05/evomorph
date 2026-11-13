@@ -13,7 +13,11 @@ from evomorph.visualization import dashboard_media as media
 from evomorph.visualization.dashboard_common import SELECTED, Ctx, chart, images, table
 from evomorph.visualization.dashboard_plots import lineage_figure
 
-LINEAGE_DEPTH = 12  # generations back; enough to see a quick run's whole ancestry
+# Generations of ancestry shown by default. With two parents per crossover the
+# ancestor count can double per generation, so a long run's full tree is
+# hundreds of rows; 4 keeps the table short and the slider goes back further.
+LINEAGE_DEPTH = 4
+MAX_LINEAGE_DEPTH = 60
 
 
 def _default_id(ctx: Ctx, ids: list[str]) -> str | None:
@@ -68,8 +72,8 @@ def _body(ctx: Ctx, rec: dict[str, Any]) -> None:
     with right:
         st.markdown("**Controller parameters**")
         table(desc.controller_table(genome), hide_index=True)
-        st.markdown("**Joints and per-limb controller genes**")
-        table(desc.joint_table(genome), hide_index=True)
+    st.markdown("**Joints and per-limb controller genes**")
+    table(desc.joint_table(genome), hide_index=True)
 
 
 def _scores(rec: dict[str, Any]) -> None:
@@ -87,7 +91,9 @@ def _scores(rec: dict[str, Any]) -> None:
 
 
 def _lineage(ctx: Ctx, rec: dict[str, Any]) -> None:
-    rows = dd.lineage(ctx.index, rec["id"], LINEAGE_DEPTH)
+    depth = st.slider("Generations back", 1, MAX_LINEAGE_DEPTH, LINEAGE_DEPTH, key="lineage_depth")
+    rows = dd.lineage(ctx.index, rec["id"], depth)
+    st.caption(f"{len(rows) - 1} ancestor(s) within {depth} generation(s) of parentage.")
     known = [r for r in rows if r.get("recorded")]
     if len(known) > 1:
         chart(lineage_figure(rows), "lineage_chart")
@@ -117,6 +123,8 @@ def _clip(ctx: Ctx, rec: dict[str, Any]) -> None:
         path = media.cached(ctx.cache, target, "clip")
         for err in report.errors:
             st.warning(f"The clip could not be made ({err}).")
+        if path is not None:
+            st.rerun()  # redraw without the button, now that the clip exists
     if path is None:
         st.caption("No clip rendered yet. Clips are cached, so each is made only once.")
         return

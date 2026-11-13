@@ -144,7 +144,8 @@ def table(df, **kwargs) -> None:
 
 def chart(fig, key: str, **kwargs) -> Any:
     """Plotly chart with our own palette (theme=None keeps Streamlit from recolouring it)."""
-    return st.plotly_chart(fig, width="stretch", key=key, theme=None, **kwargs)
+    config = {"displayModeBar": False}  # the hover toolbar covers small chart titles
+    return st.plotly_chart(fig, width="stretch", key=key, theme=None, config=config, **kwargs)
 
 
 def friendly(problem: Exception) -> None:

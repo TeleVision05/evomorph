@@ -48,8 +48,9 @@ def _layout(fig: go.Figure, title: str, x: str, y: str, height: int = 340) -> go
         plot_bgcolor=SURFACE,
         font={"color": INK, "size": 12},
         height=height,
-        margin={"l": 60, "r": 20, "t": 48, "b": 48},
-        legend={"orientation": "h", "y": -0.22, "font": {"color": MUTED}},
+        margin={"l": 60, "r": 20, "t": 48, "b": 90},
+        # below the x-axis title, so the two never overlap
+        legend={"orientation": "h", "y": -0.32, "yanchor": "top", "font": {"color": MUTED}},
         hovermode="x unified",
     )
     fig.update_xaxes(title=x, gridcolor=GRID, zerolinecolor=GRID, color=MUTED)
@@ -238,6 +239,9 @@ def lineage_figure(rows: Sequence[dict[str, Any]]) -> go.Figure:
 
 def comparison_bars(names: Sequence[str], values: Sequence[float], title: str) -> go.Figure:
     """One small bar chart per metric; bars keep the creature's slot colour."""
+    finite = [v for v in values if np.isfinite(v)]
+    lo, hi = min([0.0, *finite]), max([0.0, *finite])
+    pad = 0.18 * (hi - lo or 1.0)  # headroom so the value labels above the bars fit
     fig = go.Figure(
         go.Bar(
             x=list(names),
@@ -245,8 +249,10 @@ def comparison_bars(names: Sequence[str], values: Sequence[float], title: str) -
             marker={"color": [SERIES[i % len(SERIES)] for i in range(len(names))]},
             text=[f"{v:+.3g}" if np.isfinite(v) else "n/a" for v in values],
             textposition="outside",
+            cliponaxis=False,
         )
     )
     fig = _layout(fig, title, "", "", 260)
     fig.update_layout(showlegend=False, hovermode="closest", margin={"t": 40, "b": 30})
+    fig.update_yaxes(range=[lo - (pad if lo < 0 else 0), hi + pad])
     return fig

@@ -67,7 +67,7 @@ class CellView:
 class ArchiveView:
     spec: ArchiveSpec
     cells: dict[tuple[int, int], CellView] = field(default_factory=dict)
-    source: str = "saved"  # "saved" or "rebuilt from generation files"
+    source: str = "read from archive/archive.json"  # or "rebuilt from generation files"
 
     @property
     def coverage(self) -> float:
@@ -93,7 +93,7 @@ def _saved_archive(run: Run) -> ArchiveView | None:
         meta = load_json(meta_path)
         s = meta["spec"]
         spec = ArchiveSpec(tuple(s["descriptors"]), tuple(s["bins"]), tuple(s["ranges"]))
-        view = ArchiveView(spec, source="saved")
+        view = ArchiveView(spec, source="read from archive/archive.json")
         for row in meta["cells"]:
             key = (int(row["cell"][0]), int(row["cell"][1]))
             view.cells[key] = CellView(

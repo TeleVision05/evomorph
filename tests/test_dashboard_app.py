@@ -75,6 +75,15 @@ def test_inspector_shows_the_selected_creature(monkeypatch, results, cache_dir):
     assert any(df.value.shape[0] > 0 for df in at.dataframe)
 
 
+def test_clip_button_renders_a_real_clip(monkeypatch, results, tmp_path):
+    at = _open(_app(monkeypatch, results, tmp_path), "ga_tiny", "Creature inspection")
+    assert not at.get("video")
+    at.button(key="clip_button").click().run()
+    _clean(at)
+    assert len(at.get("video")) == 1
+    assert any("(identical)" in c.value for c in at.caption)  # re-simulation matches
+
+
 def test_selecting_an_archive_cell_opens_that_elite(monkeypatch, results, cache_dir):
     at = _open(_app(monkeypatch, results, cache_dir), "me_tiny", "MAP-Elites archive")
     cells = at.selectbox(key="archive_cell")
