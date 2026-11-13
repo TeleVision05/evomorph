@@ -46,6 +46,7 @@ def test_experiment_analysis_writes_every_plot_stats_and_summary(experiment) -> 
     assert len(stats) == 3 * len(MEASURES)
 
 
+@pytest.mark.gl
 def test_gallery_renders_offscreen(experiment) -> None:
     _, plots = analyze(experiment, render=True)
     gallery = next(p for p in plots if p.name == "gallery.png")
@@ -67,6 +68,7 @@ def test_ga_plan_history_counts_the_whole_population(experiment) -> None:
     assert all(sum(c.values()) == 4 for c in counts) and sims[-1] == 12
 
 
+@pytest.mark.gl
 def test_single_run_analysis_keeps_the_engine_summary(experiment) -> None:
     run = experiment / "runs" / "controller_s1"
     before = (run / "summary.md").read_text()

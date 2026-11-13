@@ -92,6 +92,7 @@ def test_sim_config_rejects_drifting_control_period_and_zero_duration() -> None:
     assert SimConfig(timestep=0.001).n_substeps == 20
 
 
+@pytest.mark.gl
 def test_inspect_png(tmp_path) -> None:
     png = tmp_path / "q.png"
     assert main(["inspect", "--reference", "quadruped", "--png", str(png)]) == 0

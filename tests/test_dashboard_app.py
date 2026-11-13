@@ -75,6 +75,7 @@ def test_inspector_shows_the_selected_creature(monkeypatch, results, cache_dir):
     assert any(df.value.shape[0] > 0 for df in at.dataframe)
 
 
+@pytest.mark.gl
 def test_clip_button_renders_a_real_clip(monkeypatch, results, tmp_path):
     at = _open(_app(monkeypatch, results, tmp_path), "ga_tiny", "Creature inspection")
     assert not at.get("video")

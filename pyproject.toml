@@ -48,4 +48,5 @@ testpaths = ["tests"]
 addopts = "-m 'not slow'"
 markers = [
     "slow: long-running simulation sweeps (run with -m slow)",
+    "gl: renders offscreen; skipped with a reason when no OpenGL context exists (tests/conftest.py)",
 ]

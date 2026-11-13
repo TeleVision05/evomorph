@@ -1,0 +1,47 @@
+# Lint, size limits and the fast test suite on every push and pull request.
+#
+# Offscreen rendering: GitHub's runners have no display or GPU, so MuJoCo uses
+# OSMesa (software OpenGL). The six tests that render are marked `gl`; if no
+# offscreen context can be made they are skipped with a reason, and pytest's
+# -rs summary lists and counts every skip, so a lost renderer is visible in
+# the log rather than silently passing (tests/conftest.py).
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      MUJOCO_GL: osmesa
+      PYOPENGL_PLATFORM: osmesa
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install OSMesa (software OpenGL for offscreen rendering)
+        run: sudo apt-get update && sudo apt-get install -y libosmesa6
+
+      - uses: astral-sh/setup-uv@v6
+
+      - name: Create the environment
+        run: |
+          uv venv --python 3.12
+          uv pip install --python .venv/bin/python -r requirements-lock.txt -e ".[dev,dashboard]"
+
+      - name: ruff check
+        run: .venv/bin/ruff check .
+
+      - name: ruff format --check
+        run: .venv/bin/ruff format --check .
+
+      - name: Size limits (file <= 500 lines, function <= 75 lines)
+        run: .venv/bin/python scripts/check_sizes.py evomorph tests scripts
+
+      - name: Fast test suite (slow sweeps excluded by pyproject addopts)
+        run: .venv/bin/python -m pytest -q -rs

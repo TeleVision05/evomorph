@@ -202,6 +202,7 @@ def test_viewer_reset_respawns_on_the_ground() -> None:
     assert spawned[2] < 0.3  # standing height, not the 0.5 m+ build height
 
 
+@pytest.mark.gl
 def test_recording_captures_frames() -> None:
     from evomorph.simulation.evaluator import RecordSpec
 

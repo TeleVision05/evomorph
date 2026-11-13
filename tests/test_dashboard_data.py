@@ -127,6 +127,7 @@ def test_media_key_tracks_genes_not_ids():
     assert media.media_key(t, "clip") != media.media_key(replace(t, seed=3), "clip")
 
 
+@pytest.mark.gl
 def test_clip_is_a_real_resimulation(tmp_path):
     """The rendered clip re-simulates the stored genome and reproduces its stored fitness."""
     run = _load("ga_tiny")
