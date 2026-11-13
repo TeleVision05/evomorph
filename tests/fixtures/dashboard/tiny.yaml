@@ -1,0 +1,36 @@
+# Tiny evolution config that produces the dashboard's test fixture runs.
+#
+# Regenerate with scripts/make_dashboard_fixture.sh (it runs the real evolve
+# command twice: GA and MAP-Elites). The numbers are chosen for size and speed,
+# not for science:
+#   * 3 s of measured simulation (quick.yaml uses 10 s) keeps one evaluation
+#     around 0.06 s of CPU, so both runs finish in well under a minute;
+#   * 2 runs per genome (friction 0.6 and 1.0, spawn seeds 0 and 1), so every
+#     stored fitness is still a multi-seed score, as in real runs;
+#   * population / batch of 8 and a 64-simulation budget gave 7 GA generations
+#     (0-6) and 4 MAP-Elites batches (0-3) when generated: enough for strips,
+#     lineage and an archive, while the committed fixture stays under 1 MB
+#     (about 0.7 MB for both runs).
+# Nothing in this file is a research result.
+sim:
+  duration: 3.0
+  settle_time: 0.5
+
+evolution:
+  algorithm: ga
+  mode: joint
+  seed: 0
+  budget: 64                # simulations = genomes x runs per genome
+  workers: 2                # process pool (hard-capped at 6 by the engine)
+  evaluation:
+    aggregate: mean
+    runs:
+      - {env: {kind: flat, friction: 0.6}, seed: 0}
+      - {env: {kind: flat, friction: 1.0}, seed: 1}
+  population_size: 8
+  elite_count: 2
+  tournament_size: 3
+
+map_elites:
+  batch_size: 8
+  init_size: 16

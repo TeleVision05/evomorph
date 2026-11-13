@@ -22,6 +22,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.6", "pre-commit>=3.7"]
+# Research dashboard: streamlit run evomorph/visualization/dashboard.py
+# (developed and tested with streamlit 1.67.0 and plotly 7.1.0; see docs/DASHBOARD.md).
+dashboard = ["streamlit>=1.40", "plotly>=5.20"]
 
 [project.scripts]
 evomorph = "evomorph.cli:main"
