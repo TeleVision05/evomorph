@@ -158,3 +158,48 @@ forbid. Also noted: the champion's `torso_mass_scale` is at its upper bound
 (2.0); joint torque scales with total mass, so a heavy torso buys strength
 for light legs. The population median moved only from 1.33 to 1.46, so this
 is a property of this champion, not a population-wide drift.
+
+### 2. MAP-Elites, joint evolution
+
+`python -m evomorph evolve --config configs/quick.yaml --algorithm map_elites --name quick_me_joint_s0`
+(42 batches of 48 genomes, 6000 simulations, 722.6 s).
+
+| batch | sims | coverage | QD-score | best | mean of elites | body plans in archive | behaviour spread |
+|---|---|---|---|---|---|---|---|
+| 0 | 144 | 5% | 15.6 | +0.318 | -0.084 | 3 | 0.329 |
+| 10 | 1584 | 42% | 139.5 | +0.484 | +0.121 | 3 | 0.386 |
+| 20 | 3024 | 56% | 191.5 | +0.825 | +0.220 | 3 | 0.417 |
+| 30 | 4464 | 60% | 205.5 | +0.828 | +0.225 | 3 | 0.424 |
+| 41 | 6000 | 62% | 213.7 | +0.828 | +0.247 | 3 | 0.432 |
+
+Of the 192 random initial genomes, 70 fell in at least one run and could not
+enter the archive. Every one of the 62 final elites re-scores to its stored
+fitness, metrics and cell (`scripts/check_archive.py
+results/quick_me_joint_s0`: 62/62).
+
+[Contact sheet](media/evolution/me_elites_sheet.png) of six elites from
+cells chosen far apart (greedy farthest point from the best cell, rendered by
+`scripts/render_run.py results/quick_me_joint_s0 --elites 6`; one row each,
+five frames over 10 s at friction 0.6): a slow, efficient long-bodied walker
+(cell (3,9), 0.30 m/s, efficiency 0.65, the champion, slip 0.36), a small
+compact body that twists and skates fast (cell (9,2), 0.87 m/s, slip 0.97,
+fitness 0.11), a near-stationary shuffler (cell (0,0)), an alternating-gait
+turner (cell (4,3)), a 0.56 Hz creeper (cell (0,5)) and a mid-speed walker
+(cell (5,6)). They are different behaviours and proportions.
+
+**Finding: MAP-Elites kept behaviours apart but not bodies.** All six of
+those elites are 6-leg two-segment bodies, and so are 54 of the 62 elites
+(8x2: 6, 4x2: 2); 53 use the diagonal gait. One body plan was good enough to
+win almost every behaviour cell. The GA's passive archive at the same budget
+holds 6x2: 26, 8x2: 25, 4x2: 13, 4x1: 1. Speed and efficiency are behaviour
+descriptors; they do not ask for different bodies, so a QD archive on them
+is not by itself evidence of morphological diversity.
+
+**GA vs MAP-Elites at equal budget (one seed, so no significance claim).**
+MAP-Elites covered more of the archive early (42% vs 38% at ~1.5k
+simulations, 56% vs 51% at ~3k), but by 6000 simulations the GA's passive
+archive was ahead on coverage (65% vs 62%), QD-score (227.9 vs 213.7) and
+best fitness (1.021 vs 0.828). MAP-Elites' champion is the better gripper
+(slip 0.36 vs 0.70) and more efficient (0.65 vs 0.53) but half as fast
+(0.30 vs 0.63 m/s). Several seeds per condition are needed before either
+algorithm can be called better.

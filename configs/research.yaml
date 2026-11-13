@@ -2,9 +2,10 @@
 # (brief section 9). sim and fitness are the core defaults, repeated here so the
 # file is self-contained; change them only together with the core.
 #
-# Budget arithmetic (measured on this laptop, see the evolution report): about
-# 17 simulations/s with 6 workers, so 30000 simulations is ~30 minutes per run.
-# Three modes x GA + MAP-Elites x 3 seeds = 12 runs is ~6 hours: an overnight job.
+# Budget arithmetic (measured on this laptop with 6 workers while it was shared
+# with other work, see docs/EVOLUTION.md): 8-17 simulations/s, 13.8/s for the
+# quick GA run. 30000 simulations is therefore 30-60 minutes per run, and three
+# modes x GA + MAP-Elites x 3 seeds = 12 runs is 6-12 hours: an overnight job.
 
 sim:
   duration: 10.0

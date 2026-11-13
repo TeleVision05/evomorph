@@ -51,8 +51,8 @@ fitness:
 # --- evolution (evomorph/evolution/settings.py) --------------------------------
 # Shared by both algorithms, plus the GA's own settings. Budget is counted in
 # simulations (genomes x runs per genome), so GA and MAP-Elites compare fairly.
-# Measured on this laptop: 17.2 simulations/s with 6 workers, so 6000 sims is
-# about 6 minutes.
+# Measured on this laptop (shared with other work): 8-17 simulations/s with 6
+# workers, so 6000 sims takes 6-12 minutes.
 evolution:
   algorithm: ga             # ga | map_elites
   mode: joint               # joint | controller (body frozen) | morphology (controller frozen)
