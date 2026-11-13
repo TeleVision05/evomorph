@@ -116,7 +116,8 @@ Generation 0 mostly cannot walk: median forward displacement -0.003 m and 4
 of 48 move a metre (mean over the three runs). Best and mean fitness both
 rise, but not smoothly: the mean climbs from -0.75 to about 0 in ten
 generations and then plateaus, and the best sat at 0.750 from generation 8 to
-47 before a mutation of an 8-legged elite reached 1.021 in generation 48. With
+47 before a mutant of the 8-legged elite `g0045-032` (+0.660) reached 1.021
+in generation 48. With
 sharing, body-plan elites and immigrants, much of the population stays
 exploratory rather than converging, which keeps the mean low.
 
@@ -147,17 +148,19 @@ depends on it: 6.27 m at friction 0.2 (93% of stance load sliding), 6.89 m at
 0.45, 6.43 m at 1.0, 5.86 m at 1.5. The hand-designed reference quadruped
 behaves the same way (3.77 m at 0.2, 4.46 m at 1.0). The creature walks, but
 its feet slide through most of each stance, and training on friction 0.6-1.0
-did not select against that because the slower feet cost no speed. The only
+did not select against that because skating costs it almost no speed. The only
 charge is the slip factor (at most half the progress). This is not a bug in
 the evolution code and not a loophole that makes a non-walker win; it is the
 known core weakness (core open issues: stiff position servos, incompatible
 stance arcs). Making skating lose needs either a stronger `slip_penalty` or a
 contact or controller change in the core; neither was made here, because
 re-tuning the score after seeing the winner is exactly what the house rules
-forbid. Also noted: the champion's `torso_mass_scale` is at its upper bound
-(2.0); joint torque scales with total mass, so a heavy torso buys strength
-for light legs. The population median moved only from 1.33 to 1.46, so this
-is a property of this champion, not a population-wide drift.
+forbid. Also noted: joint torque scales with total mass, so a heavy torso
+buys strength for the legs. The champion of generations 8-47 (`g0008-034`)
+had `torso_mass_scale` at its upper bound (2.0) and the final champion sits at
+1.83, but the population median moved only from 1.33 (generation 0) to 1.46
+(generation 35), so this is not a population-wide drift. Watch it in longer
+runs.
 
 ### 2. MAP-Elites, joint evolution
 
@@ -268,3 +271,22 @@ workers, plan on 8-17 simulations/s:
 One seed per condition (as above) is enough to see mechanisms work and too
 few to rank algorithms; the comparisons in sections 2 and 3 need at least 3
 seeds per condition, which is what the 12-run overnight budget buys.
+
+## Open issues (2026-11-13)
+
+- Every comparison above is one seed per condition; none is a ranking.
+- Feet skate and the friction range 0.6-1.0 does not make that cost speed
+  (section 1). Needs a core decision: slip penalty, contact model or a
+  closed-loop controller.
+- MAP-Elites on speed x efficiency kept one body plan in 54 of 62 cells
+  (section 2). For morphological diversity add a body descriptor or run the
+  archive per body plan.
+- The diversity mechanism, as configured, kept 8 body plans but cost best and
+  mean fitness on this seed (section 3). Sharing radius, plan elites and
+  immigrants have not been tuned.
+- Controller-only and morphology-only modes are tested (operators, CLI) but
+  have not had a full quick run yet.
+- Pre-existing core test `tests/test_evaluator.py::test_single_process_throughput`
+  (a 0.5 CPU-second limit for one 10 s evaluation) failed in 2 of 10 full
+  suite runs on this machine under load average ~30 (0.549 s measured). It
+  is a timing threshold in the core, unchanged on this branch.
