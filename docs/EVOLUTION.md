@@ -7,7 +7,7 @@ first runs on this laptop showed. Code: `evomorph/evolution/`. Command:
 ## Running it
 
 ```bash
-# GA, joint morphology + controller evolution, quick laptop budget (~6-8 min)
+# GA, joint morphology + controller evolution, quick budget (6-12 min measured here)
 .venv/bin/python -m evomorph evolve --config configs/quick.yaml
 # MAP-Elites with the same budget
 .venv/bin/python -m evomorph evolve --config configs/quick.yaml --algorithm map_elites
