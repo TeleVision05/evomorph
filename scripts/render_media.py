@@ -20,9 +20,10 @@ from evomorph.visualization.renderer import contact_sheet, render_still, render_
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--out", type=Path, default=Path("docs/media"))
+    ap.add_argument("--no-references", action="store_true", help="only the given genomes")
     ap.add_argument("genomes", nargs="*", type=Path)
     args = ap.parse_args()
-    creatures = [reference_quadruped(), reference_hexapod()]
+    creatures = [] if args.no_references else [reference_quadruped(), reference_hexapod()]
     creatures += [load_genome(p) for p in args.genomes]
     for g in creatures:
         name = g.id
@@ -31,9 +32,13 @@ def main() -> None:
         r = render_video(g, args.out / f"{name}.mp4", spec=spec)
         contact_sheet(r.frames, args.out / f"{name}_sheet.png", n=8, cols=4)
         m = r.metrics
+        if not r.valid:
+            print(f"{name}: INVALID {r.failure_reason}")
+            continue
         print(
             f"{name}: fitness {r.fitness:+.3f} fwd {m['forward_displacement']:+.2f} m "
-            f"lat {m['lateral_displacement']:.2f} m {r.failure_reason or 'completed'}"
+            f"lat {m['lateral_displacement']:.2f} m support {m['foot_support_fraction']:.2f} "
+            f"slip {m['slip_fraction']:.2f} {r.failure_reason or 'completed'}"
         )
 
 

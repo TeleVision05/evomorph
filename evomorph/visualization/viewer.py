@@ -12,7 +12,9 @@ outside ``mjpython``. The creature spawns exactly as in ``evaluate`` (same
 spawn height and seeded noise), stands still for ``settle_time``, then the
 controller starts with its smooth one-second ramp. Targets update at the
 configured control rate, matching evaluation. Press Backspace in the viewer to
-reset; the controller restarts with it because it is driven by simulation time.
+reset: the model's reference pose (``qpos0``) is set to the spawn pose, so the
+creature respawns standing on the ground rather than dropping from the height it
+was built at, and the controller restarts because it is driven by simulation time.
 """
 
 from __future__ import annotations
@@ -53,13 +55,20 @@ def make_control_callback(genome: Genome, body, sim: SimConfig):
     return callback
 
 
+def prepare_body(genome: Genome, env: EnvSpec | None, sim: SimConfig, seed: int):
+    """Build and spawn the creature exactly as ``evaluate`` does; reset returns to the spawn."""
+    body = build_body(genome, env or EnvSpec(), sim)
+    spawn(body, sim, make_rng(seed))
+    body.model.qpos0[:] = body.data.qpos  # Backspace (mj_resetData) respawns here
+    return body
+
+
 def view(
     genome: Genome, env: EnvSpec | None = None, sim: SimConfig | None = None, seed: int = 0
 ) -> None:
     """Open the interactive viewer (blocks until the window is closed)."""
     sim = sim or SimConfig()
-    body = build_body(genome, env or EnvSpec(), sim)
-    spawn(body, sim, make_rng(seed))
+    body = prepare_body(genome, env, sim, seed)
     mujoco.set_mjcb_control(make_control_callback(genome, body, sim))
     try:
         mujoco.viewer.launch(body.model, body.data)

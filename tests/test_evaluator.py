@@ -189,6 +189,18 @@ def test_viewer_control_callback_reproduces_walking() -> None:
     assert float(body.data.qpos[0]) - x0 > 1.0
 
 
+def test_viewer_reset_respawns_on_the_ground() -> None:
+    from evomorph.visualization.viewer import prepare_body
+
+    sim = SimConfig()
+    body = prepare_body(reference_quadruped(), None, sim, seed=0)
+    spawned = body.data.qpos.copy()
+    mujoco.mj_step(body.model, body.data, nstep=500)
+    mujoco.mj_resetData(body.model, body.data)  # what Backspace does
+    np.testing.assert_array_equal(body.data.qpos, spawned)
+    assert spawned[2] < 0.3  # standing height, not the 0.5 m+ build height
+
+
 def test_recording_captures_frames() -> None:
     from evomorph.simulation.evaluator import RecordSpec
 

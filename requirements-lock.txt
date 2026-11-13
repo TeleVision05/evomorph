@@ -1,0 +1,40 @@
+# Exact versions the test suite and the determinism checks were run with (Python 3.12.13,
+# macOS arm64, 2026-11-13). Bit-identical results are only promised within one set of
+# versions, MuJoCo above all. Install with:
+#   uv pip install --python .venv/bin/python -r requirements-lock.txt -e ".[dev]"
+cfgv==3.5.0
+contourpy==1.4.0
+cycler==0.12.1
+distlib==0.4.4
+filelock==4.2.10
+fonttools==4.68.0
+glfw==2.11.0
+identify==2.6.20
+imageio==2.38.1
+imageio-ffmpeg==0.8.1
+iniconfig==2.3.1
+kiwisolver==1.5.1
+matplotlib==3.11.2
+mujoco==4.0.1
+mujoco-core==4.0.1
+mujoco-studio==4.0.1
+mujoco-studio-wasm==4.0.1
+nodeenv==1.12.0
+numpy==2.5.4
+packaging==26.3
+pillow==13.0.0
+platformdirs==4.14.5
+pluggy==1.7.0
+pre-commit==4.7.0
+pygments==2.21.0
+pyopengl==3.1.10
+pyparsing==3.3.3
+pytest==9.2.0
+python-dateutil==4.0.0
+python-discovery==1.9.5
+pyyaml==6.0.3
+ruff==0.17.5
+scipy==1.18.1
+tzdata==2026.6
+virtualenv==21.15.6
+websockets==17.4

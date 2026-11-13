@@ -6,10 +6,12 @@ build-backend = "setuptools.build_meta"
 name = "evomorph"
 version = "0.1.0"
 description = "Software-only evolutionary robotics laboratory: co-evolving morphology and CPG locomotion in MuJoCo"
-readme = "docs/SPEC.md"
+readme = "README.md"
 requires-python = ">=3.11,<3.13"
 dependencies = [
-    "mujoco>=3.2",
+    # Developed and tested on 4.0.1 (see requirements-lock.txt); results are only
+    # bit-identical within one MuJoCo version.
+    "mujoco>=4.0,<5",
     "numpy>=1.26",
     "scipy>=1.11",
     "pyyaml>=6.0",
