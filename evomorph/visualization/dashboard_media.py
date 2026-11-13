@@ -37,6 +37,18 @@ KINDS = {"thumb": ".png", "still": ".png", "clip": ".mp4"}
 STARTUP_SECONDS = 60
 SECONDS_PER_JOB = {"thumb": 15, "still": 15, "clip": 120}
 
+# How far a clip's re-simulated fitness may sit from the stored one and still
+# count as the same simulation: relative to the fitness, absolute below 1.
+# Re-simulating on the machine that ran the evolution is bit-identical (diff 0).
+# On another CPU architecture the last bits differ: the ga_tiny fixture champion
+# made on macOS arm64 re-simulates on Linux x86-64 (GitHub CI) to 0.6820907558843688
+# vs 0.6820907558843654 stored, a difference of 3.4e-15 (2026-11-13, same MuJoCo
+# 4.0.1 and numpy 2.5.4). A genuinely different simulation moves it far more: the
+# smallest gap between a creature's two spawn-seed runs in the fixtures is 1.2e-3
+# (85 valid creatures, 2026-11-13). 1e-9 leaves about six orders of magnitude of
+# room on each side.
+RESIM_TOLERANCE = 1e-9
+
 
 @dataclass(frozen=True)
 class Target:
@@ -89,6 +101,35 @@ def clip_meta(path: Path) -> dict[str, Any] | None:
         return json.loads(meta.read_text())
     except (OSError, ValueError):
         return None
+
+
+@dataclass(frozen=True)
+class ResimCheck:
+    """A clip's re-simulated fitness against the fitness stored by the run."""
+
+    stored: float
+    again: float
+
+    @property
+    def difference(self) -> float:
+        return abs(self.again - self.stored)
+
+    @property
+    def matches(self) -> bool:
+        """Same simulation, up to last-bit differences between CPU types."""
+        return self.difference <= RESIM_TOLERANCE * max(1.0, abs(self.stored))
+
+    def describe(self) -> str:
+        head = (
+            f"re-simulated fitness {self.again:+.6f} vs stored {self.stored:+.6f}, "
+            f"difference {self.difference:.1e}"
+        )
+        if self.matches:
+            return f"{head}: a match (within {RESIM_TOLERANCE:.0e}; see docs/DASHBOARD.md)."
+        return (
+            f"{head}: a MISMATCH, beyond the {RESIM_TOLERANCE:.0e} tolerance. This clip is "
+            "not the simulation the run scored (see docs/DASHBOARD.md)."
+        )
 
 
 def _job(cache: Path, target: Target, kind: str) -> dict[str, Any]:
