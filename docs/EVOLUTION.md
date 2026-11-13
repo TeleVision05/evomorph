@@ -287,6 +287,6 @@ seeds per condition, which is what the 12-run overnight budget buys.
 - Controller-only and morphology-only modes are tested (operators, CLI) but
   have not had a full quick run yet.
 - Pre-existing core test `tests/test_evaluator.py::test_single_process_throughput`
-  (a 0.5 CPU-second limit for one 10 s evaluation) failed in 2 of 10 full
+  (a 0.5 CPU-second limit for one 10 s evaluation) failed in 3 of 10 full
   suite runs on this machine under load average ~30 (0.549 s measured). It
   is a timing threshold in the core, unchanged on this branch.
