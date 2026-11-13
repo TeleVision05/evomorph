@@ -21,6 +21,8 @@ from __future__ import annotations
 import time
 from dataclasses import dataclass, field
 
+import numpy as np
+
 from evomorph.evolution.archive import Archive, ArchiveSpec, Elite
 from evomorph.evolution.operators import Variation
 from evomorph.evolution.pool import BatchRunner
@@ -31,6 +33,7 @@ from evomorph.evolution.progress import (
     best_of,
     make_row,
 )
+from evomorph.morphology.genome import Genome
 from evomorph.simulation.environment import EnvSpec
 from evomorph.simulation.evaluator import EvalResult
 from evomorph.utils.random_state import make_rng
@@ -93,7 +96,7 @@ class MapElites:
         self.used, self.evaluated = 0, 0
         self.champion: Individual | None = None
 
-    def _make_batch(self, rng, batch: int, n: int) -> list:
+    def _make_batch(self, rng: np.random.Generator, batch: int, n: int) -> list[Genome]:
         if self.evaluated < self.cfg.init_size or len(self.archive) == 0:
             return [self.variation.random(rng, batch_id(batch, k), batch) for k in range(n)]
         elites = self.archive.elites()
@@ -104,7 +107,7 @@ class MapElites:
             out.append(self.variation.child(rng, a, b, batch_id(batch, k), batch))
         return out
 
-    def _step(self, rng, batch: int, n: int) -> list[Individual]:
+    def _step(self, rng: np.random.Generator, batch: int, n: int) -> list[Individual]:
         genomes = self._make_batch(rng, batch, n)
         results = self.runner.map(genomes)
         out = []

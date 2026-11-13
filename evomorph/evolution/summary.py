@@ -50,6 +50,14 @@ def _f(value: str | float) -> str:
         return str(value)
 
 
+def _g(value: str) -> str:
+    """4 significant figures for the table (exact values stay in metrics.csv)."""
+    try:
+        return f"{float(value):.4g}"
+    except ValueError:
+        return value
+
+
 def _progress_lines(rows: list[dict[str, str]]) -> list[str]:
     if not rows:
         return ["No generation completed."]
@@ -69,9 +77,8 @@ def _progress_lines(rows: list[dict[str, str]]) -> list[str]:
     )
     lines = ["| | " + " | ".join(cols) + " |", "|---" * (len(cols) + 1) + "|"]
     for label, r in (("first", first), ("last", last)):
-        lines.append(
-            f"| {label} (step {r['generation']}) | " + " | ".join(r[c] for c in cols) + " |"
-        )
+        cells = " | ".join(_g(r[c]) for c in cols)
+        lines.append(f"| {label} (step {r['generation']}) | {cells} |")
     return lines
 
 

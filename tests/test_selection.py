@@ -47,7 +47,7 @@ def test_gene_distance_properties() -> None:
     assert np.allclose(np.diag(d), 0)
     assert np.allclose(d, d.T)
     assert d.min() >= 0 and d.max() <= 1
-    # random pairs sit near the documented ~0.35
+    # random pairs sit near the documented ~0.32
     assert 0.25 < mean_pairwise(d) < 0.45
     clone = copy.deepcopy(gs[0])
     assert gene_distance_matrix([gs[0], clone], GENES)[0, 1] == 0.0

@@ -18,7 +18,7 @@ Two further protections run alongside sharing when diversity is on:
 Diversity measures logged every generation:
 
 * ``mean_gene_distance``: mean pairwise normalised gene distance (see
-  :func:`gene_distance_matrix`), 0 = clones; about 0.35 for random genomes;
+  :func:`gene_distance_matrix`), 0 = clones; 0.32 for random genomes (200 genomes, seed 0);
 * ``n_body_plans``: distinct (limbs, segments) combinations present;
 * ``behaviour_spread``: mean pairwise Euclidean distance between valid
   individuals in the normalised MAP-Elites descriptor space (speed, efficiency),
@@ -41,8 +41,9 @@ DIVERSITY_METHODS: tuple[str, ...] = ("sharing", "none")
 class DiversityConfig:
     """Diversity mechanism settings (``method: none`` switches all of it off).
 
-    ``sharing_radius = 0.15`` is about 40% of the mean distance between two
-    random genomes (~0.35): individuals closer than that are treated as one
+    ``sharing_radius = 0.15`` is about half the mean distance between two
+    random genomes (0.32, measured on 200, seed 0); the two reference creatures
+    are 0.08 apart. Individuals closer than the radius are treated as one
     niche. ``plan_elites = 1`` protects the best of each of at most 8 body plans.
     ``immigrant_fraction = 0.05`` is 2-3 random genomes in a population of 48:
     enough to keep reintroducing lost plans, cheap enough not to stall progress.

@@ -18,6 +18,7 @@ Layout of ``results/<name or run_NNN>/``::
                            morphology modes only)
     best_genome.json       overall champion
     best_result.json       its aggregated evaluation (fitness, metrics, per-run)
+    best_heldout.json      the champion scored on held-out seeds (seed + 1000)
     summary.md             human-readable summary
 
 Floats are written with Python's shortest round-trip repr in both the CSV and

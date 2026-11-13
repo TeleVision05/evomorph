@@ -28,11 +28,17 @@ from evomorph.evolution.modes import Freezer, load_template
 from evomorph.evolution.operators import Variation
 from evomorph.evolution.pool import BatchRunner, clamp_workers
 from evomorph.evolution.progress import GenerationReport, Individual
-from evomorph.evolution.rundir import RunWriter, create_run_dir
+from evomorph.evolution.rundir import RunWriter, create_run_dir, individual_record
 from evomorph.evolution.settings import RunConfig, to_mapping
 from evomorph.evolution.summary import write_summary
+from evomorph.utils.serialization import dump_json
 
 HELDOUT_SEED_OFFSET = 1000
+
+
+def say(line: str) -> None:
+    """Print and flush, so progress shows up live when stdout is a log file."""
+    print(line, flush=True)
 
 
 @dataclass
@@ -51,7 +57,7 @@ class RunOutcome:
 class ProgressPrinter:
     """One line per generation / batch."""
 
-    def __init__(self, budget: int, out: Callable[[str], None] = print) -> None:
+    def __init__(self, budget: int, out: Callable[[str], None] = say) -> None:
         self.budget, self.out = budget, out
 
     def on_generation(self, rep: GenerationReport) -> None:
@@ -121,7 +127,8 @@ def _search(cfg: RunConfig, evaluator: Evaluator, cost: int, observer, workers: 
         return res.champion, res.archive, res.sims_used, res.batches, final, freezer
 
 
-def _check_champion(champion: Individual, evaluator: Evaluator, cfg: RunConfig):
+def _check_champion(champion: Individual, evaluator: Evaluator) -> tuple[bool, Individual | None]:
+    """(re-score identical?, held-out-seed result or None for a custom evaluator)."""
     again = evaluator(champion.genome)
     same = again.fitness == champion.result.fitness and again.metrics == champion.result.metrics
     heldout = None
@@ -137,7 +144,7 @@ def run_evolution(
     name: str | None = None,
     evaluator: Evaluator | None = None,
     sims_per_eval: int | None = None,
-    out: Callable[[str], None] | None = print,
+    out: Callable[[str], None] | None = say,
     command: str = "",
 ) -> RunOutcome:
     """Run one evolution into a fresh run directory (see the module doc)."""
@@ -162,7 +169,9 @@ def run_evolution(
     reproduced, heldout = None, None
     if champion is not None:
         writer.save_best(champion)
-        reproduced, heldout = _check_champion(champion, evaluator, cfg)
+        reproduced, heldout = _check_champion(champion, evaluator)
+        if heldout is not None:
+            dump_json(individual_record(heldout), path / "best_heldout.json")
     outcome = RunOutcome(path, champion, archive, used, steps, wall, reproduced, heldout, final)
     write_summary(writer, cfg, outcome, workers, cost, command)
     if out is not None:

@@ -113,9 +113,8 @@ def best_of(individuals: Sequence[Individual]) -> Individual | None:
 
 def _fitness_stats(valid: Sequence[Individual]) -> dict[str, float]:
     if not valid:
-        return dict.fromkeys(
-            ("best_fitness", "mean_fitness", "median_fitness", "std_fitness"), float("nan")
-        ) | {"p10_fitness": float("nan"), "p90_fitness": float("nan")}
+        names = ("best", "mean", "median", "std", "p10", "p90")
+        return {f"{n}_fitness": float("nan") for n in names}
     f = np.array([i.fitness for i in valid])
     p10, p90 = np.percentile(f, [10, 90])
     return {

@@ -88,7 +88,7 @@ evolution:
     phase_sigma: 0.25       # ... by this fraction of its range
   diversity:
     method: sharing         # sharing | none (none also disables plan elites and immigrants)
-    sharing_radius: 0.15    # normalised gene distance (random pairs sit near 0.35)
+    sharing_radius: 0.15    # normalised gene distance (random pairs: 0.32 on average)
     sharing_alpha: 1.0
     plan_elites: 1          # best of each body plan (limbs x segments) survives
     immigrant_fraction: 0.05

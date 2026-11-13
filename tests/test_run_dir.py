@@ -13,7 +13,7 @@ from evomorph.evolution.archive import Archive
 from evomorph.evolution.evalspec import SpecEvaluator
 from evomorph.evolution.progress import METRICS_COLUMNS
 from evomorph.evolution.rundir import RunDirExistsError, create_run_dir
-from evomorph.evolution.runner import run_evolution
+from evomorph.evolution.runner import heldout_spec, run_evolution
 from evomorph.evolution.settings import from_sections, resolve, to_mapping
 from evomorph.morphology.genome import load_genome
 from evomorph.utils.serialization import load_json
@@ -59,6 +59,14 @@ def test_quick_and_research_configs_resolve_and_round_trip() -> None:
         assert len({e.friction for e, _ in cfg.eval_spec.runs}) >= 2  # friction spread
 
 
+def test_heldout_spec_uses_fresh_seeds_on_the_same_environments() -> None:
+    spec = resolve(ROOT / "configs" / "quick.yaml").eval_spec
+    held = heldout_spec(spec)
+    assert [e for e, _ in held.runs] == [e for e, _ in spec.runs]
+    assert [s for _, s in held.runs] == [s + 1000 for _, s in spec.runs]
+    assert held.sim == spec.sim and held.fitness == spec.fitness
+
+
 def test_unknown_evolution_keys_are_errors() -> None:
     with pytest.raises(ValueError, match="populaton_size"):
         from_sections({"evolution": {"populaton_size": 3}})
@@ -71,8 +79,9 @@ def test_run_directory_contents_and_exact_reproduction(tmp_path, algorithm: str)
     cfg = from_sections(_tiny(algorithm=algorithm))
     out = run_evolution(cfg, tmp_path, "r", out=None)
     p = out.path
-    for name in ("config.yaml", "metrics.csv", "timing.csv", "best_genome.json",
-                 "best_result.json", "summary.md", "archive/archive.json"):  # fmt: skip
+    expected = ["config.yaml", "metrics.csv", "timing.csv", "best_genome.json"]
+    expected += ["best_result.json", "best_heldout.json", "summary.md", "archive/archive.json"]
+    for name in expected:
         assert (p / name).is_file(), name
     assert out.sims_used == 36 and out.reproduced is True
     rows = list(csv.DictReader((p / "metrics.csv").open()))
