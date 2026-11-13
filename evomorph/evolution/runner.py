@@ -151,6 +151,7 @@ def run_evolution(
     evaluator = evaluator or SpecEvaluator(cfg.eval_spec)
     cost = sims_per_call(evaluator, sims_per_eval)
     workers = clamp_workers(cfg.evolution.workers)
+    build_variation(cfg, cfg.ga.crossover_prob)  # a bad template fails before any folder exists
     path = create_run_dir(results_root, name)
     writer = RunWriter(path)
     writer.write_config(to_mapping(cfg))

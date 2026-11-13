@@ -127,3 +127,8 @@ def test_cli_evolve_runs_and_refuses_to_overwrite(tmp_path, capsys) -> None:
     assert main(args) == 2
     assert "never overwritten" in capsys.readouterr().err
     assert main(["evolve", "--config", str(tmp_path / "missing.yaml")]) == 2
+    bad = _tiny(mode="controller", frozen_body=str(tmp_path / "nope.json"))
+    cfg.write_text(yaml.safe_dump(bad))
+    assert main(["evolve", "--config", str(cfg), "--results", str(tmp_path / "r2")]) == 2
+    assert "neither a built-in reference" in capsys.readouterr().err
+    assert not any((tmp_path / "r2").glob("run_*"))  # no half-made run directory
