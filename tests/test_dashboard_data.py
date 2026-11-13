@@ -45,7 +45,7 @@ def test_rebuilt_archive_matches_saved_archive(name):
     idx = dd.build_index(run)
     saved = an.load_archive(run, idx)
     rebuilt = an.rebuild_archive(run, idx)
-    assert saved.source == "saved"
+    assert saved.source == "read from archive/archive.json"
     assert {k: (c.genome_id, c.fitness) for k, c in saved.cells.items()} == {
         k: (c.genome_id, c.fitness) for k, c in rebuilt.cells.items()
     }
@@ -127,6 +127,13 @@ def test_clip_is_a_real_resimulation(tmp_path):
     path = media.cached(tmp_path, t, "clip")
     assert path is not None and path.stat().st_size > 10_000
     assert media.clip_meta(path)["fitness"] == rec["seed_fitness"][0]
+    # The clip plays in real time: its length is the simulated settle + run time.
+    import imageio.v2 as imageio
+
+    reader = imageio.get_reader(path)
+    seconds = reader.count_frames() / reader.get_meta_data()["fps"]
+    sim = run.sim
+    assert seconds == pytest.approx(sim.settle_time + sim.duration, abs=0.1)
 
 
 def test_viewer_command_is_built_but_never_launched(monkeypatch, tmp_path):

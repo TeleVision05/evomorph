@@ -30,7 +30,7 @@ from typing import Any
 os.environ.setdefault("MPLBACKEND", "Agg")  # never open a matplotlib window
 
 CLIP_SIZE = (480, 360)  # px; small enough that a 330-frame mp4 stays near 1 MB
-CLIP_FPS = 30
+CLIP_FPS = 25  # = 50 Hz control rate / 2: every second control step is a frame
 THUMB_SIZE = (400, 300)  # px per view
 CLIP_METRICS = (
     "forward_displacement",
@@ -82,6 +82,11 @@ def render_clip(job: dict[str, Any]) -> Path:
     rec = RecordSpec(width=CLIP_SIZE[0], height=CLIP_SIZE[1], fps=CLIP_FPS, include_settle=True)
     result = evaluate(genome, env, sim, fitness, seed=int(job.get("seed", 0)), record=rec)
     out = Path(job["out"])
+    # The evaluator captures every round(control_rate / fps)-th control step, so
+    # the true capture rate is control_rate / that step (25 fps at the default
+    # 50 Hz, not 30). Writing at the true rate makes the clip play in real time.
+    step = max(1, round(sim.control_rate / rec.fps))
+    true_fps = sim.control_rate / step
     meta = {
         "genome_id": genome.id,
         "env": env.label(),
@@ -95,7 +100,7 @@ def render_clip(job: dict[str, Any]) -> Path:
     meta_path.parent.mkdir(parents=True, exist_ok=True)
     if result.frames:
         tmp = _tmp(out)
-        write_video(result.frames, tmp, fps=rec.fps)
+        write_video(result.frames, tmp, fps=true_fps)
         tmp.replace(out)
     meta_path.write_text(json.dumps(meta, indent=2))
     return out

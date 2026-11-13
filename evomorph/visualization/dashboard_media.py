@@ -29,7 +29,7 @@ from typing import Any
 from evomorph.morphology.genome import from_dict, genome_hash
 from evomorph.simulation.environment import EnvSpec
 
-RENDER_VERSION = 1
+RENDER_VERSION = 2  # 2: clips play in real time (capture-rate fps)
 KINDS = {"thumb": ".png", "still": ".png", "clip": ".mp4"}
 # Child-process time limit: fixed start-up (importing MuJoCo) plus a generous
 # per-job allowance. A 10 s clip re-simulates in a few seconds on this laptop,
