@@ -1,0 +1,34 @@
+# Quick laptop configuration. Sections are owned by the stage that reads them:
+#   sim, fitness  -> evomorph.config (core)
+# Later stages append their own sections (evolution, map_elites, experiment, ...).
+
+sim:
+  duration: 10.0          # s measured after settling
+  timestep: 0.002         # s physics step (implicitfast)
+  settle_time: 1.0        # s standing at rest pose before measurement
+  control_rate: 50.0      # Hz controller update
+  init_noise: 0.01        # rad std of seeded spawn joint noise
+  spawn_clearance: 0.005  # m
+  fall_tilt_deg: 75.0
+  fall_contact_time: 0.25 # s of continuous torso-ground contact = fall
+  max_linear_speed: 5.0   # m/s glitch guard
+  max_angular_speed: 40.0 # rad/s glitch guard
+  max_height_gain: 1.0    # m glitch guard (launch)
+  max_ground_penetration: 0.05
+
+fitness:
+  velocity_scale: 0.2     # m/s: progress term = sustained_velocity / this
+  lateral_scale: 1.0      # m
+  yaw_scale: 1.5708       # rad
+  tilt_scale: 1.0472      # rad
+  still_distance: 0.1     # m
+  airborne_allowance: 0.2
+  w_progress: 1.0
+  w_lateral: 0.5
+  w_rotation: 0.5
+  w_energy: 0.1
+  w_fall: 1.0
+  w_still: 0.2
+  w_smooth: 0.1
+  w_airborne: 1.0
+  penalty_cap: 2.0

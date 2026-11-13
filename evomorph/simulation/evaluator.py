@@ -277,7 +277,7 @@ class _Recorder:
         )
 
 
-def _observe(t: float, body: Body, feet: np.ndarray) -> Observation:
+def observe(t: float, body: Body, feet: np.ndarray) -> Observation:
     d = body.data
     return Observation(
         time=t,
@@ -312,7 +312,7 @@ def run(
     fall_time, reason = None, None
     for k in range(n_ctrl):
         t = k * dt
-        body.data.ctrl[:] = controller.act(t, _observe(t, body, contacts[0]))
+        body.data.ctrl[:] = controller.act(t, observe(t, body, contacts[0]))
         mujoco.mj_step(body.model, body.data, nstep=sim.n_substeps)
         check_glitch(body, sim, z0)
         contacts = ground_contacts(body)

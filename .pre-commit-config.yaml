@@ -13,3 +13,8 @@ repos:
         entry: .venv/bin/ruff format --check
         language: system
         types: [python]
+      - id: code-size
+        name: file <= 500 lines, function <= 75 lines
+        entry: .venv/bin/python scripts/check_sizes.py
+        language: system
+        types: [python]
