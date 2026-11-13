@@ -136,7 +136,9 @@ def check_archive_click(page, port: int, run: str) -> bool:
 def shots(args: argparse.Namespace) -> list[tuple[str, str, str, str | None]]:
     """(file name, run, section slug, button to click first or None)."""
     ga, me = args.ga, args.me
+    extra = [("in_progress.png", args.in_progress, "evolution", None)] if args.in_progress else []
     return [
+        *extra,
         ("evolution_viewer.png", ga, "evolution", None),
         ("creature_inspection.png", ga, "creature", "Render a clip"),
         ("map_elites_archive.png", me, "archive", None),
@@ -153,6 +155,8 @@ def main() -> int:
     ap.add_argument("--me", required=True, help="MAP-Elites run name")
     ap.add_argument("--out", type=Path, default=Path("docs/media/dashboard"))
     ap.add_argument("--only", nargs="*", help="file names to (re)take; default all")
+    ap.add_argument("--in-progress", help="also shoot this unfinished run as in_progress.png")
+    ap.add_argument("--no-click-check", action="store_true", help="skip the heat-map click")
     args = ap.parse_args()
     from playwright.sync_api import sync_playwright
 
@@ -172,8 +176,9 @@ def main() -> int:
                     continue
                 url = f"http://127.0.0.1:{port}/?run={run}&section={section}"
                 shoot(page, url, args.out / name, click)
-            clicked = check_archive_click(page, port, args.me)
-            print(f"clicking a heat-map cell selects it: {clicked}", flush=True)
+            if not args.no_click_check:
+                clicked = check_archive_click(page, port, args.me)
+                print(f"clicking a heat-map cell selects it: {clicked}", flush=True)
             browser.close()
     finally:
         server.terminate()
