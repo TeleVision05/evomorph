@@ -15,7 +15,7 @@ Three states a run directory can be in, each with a plain-language message:
   message the dashboard shows.
 
 Experiment directories are folders holding run directories; discovery walks
-up to ``MAX_DEPTH`` levels so ``results/<experiment>/<run>`` is found too.
+up to ``MAX_DEPTH`` levels so ``results/experiments/<name>/runs/<run>`` is found too.
 """
 
 from __future__ import annotations
@@ -39,8 +39,9 @@ from evomorph.simulation.environment import EnvSpec
 # A folder is a run directory when it holds any of these (a run that has only
 # just started may have config.yaml and nothing else).
 RUN_MARKERS: tuple[str, ...] = ("config.yaml", "metrics.csv", "generations")
-# results/<run> is depth 1; results/<experiment>/<condition>/<run> is depth 3.
-MAX_DEPTH = 3
+# results/<run> is depth 1. The experiment command writes
+# results/experiments/<name>/runs/<run>, depth 4 (measured 2026-11-13).
+MAX_DEPTH = 4
 # An in-progress run whose newest file is older than this is reported as
 # "may have stopped". 30 min is several generations even for research.yaml
 # (one GA generation of 48 genomes x 4 runs takes 10-25 s at 8-17 sims/s).

@@ -18,7 +18,8 @@ streamlit run evomorph/visualization/dashboard.py -- --results path/to/results
 
 Run it from the repository root. It looks for runs under `results/` (change the folder in
 the sidebar, with `--results`, or with `$EVOMORPH_RESULTS`). Run folders inside experiment
-folders are found too, up to three levels deep (`results/<experiment>/<condition>/<run>`).
+folders are found too, up to four levels deep, which covers the experiment command's
+`results/experiments/<name>/runs/<run>`.
 
 A page can be opened on a given run and section with query parameters, for example
 `http://localhost:8501/?run=quick_me_joint_s0&section=archive`. Section names:

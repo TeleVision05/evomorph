@@ -30,6 +30,17 @@ def test_discovers_runs_and_experiment_folders(tmp_path):
     assert dd.discover_runs(tmp_path / "missing") == []
 
 
+def test_discovers_runs_of_a_comparison_experiment(tmp_path):
+    """The experiment command's layout (2026-11-13, evomorph/experiments/comparison.py):
+    results/experiments/<name>/{experiment.yaml, runs/<run>/, plots/}."""
+    exp = tmp_path / "experiments" / "comparison_quick"
+    copy_runs(exp / "runs", RUN_NAMES)
+    (exp / "experiment.yaml").write_text("conditions: []\n")
+    (exp / "plots").mkdir()
+    names = [e.name for e in dd.discover_runs(tmp_path)]
+    assert names == [f"experiments/comparison_quick/runs/{n}" for n in RUN_NAMES]
+
+
 @pytest.mark.parametrize("name", RUN_NAMES)
 def test_fixture_runs_load_complete(name):
     run = _load(name)
