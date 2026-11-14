@@ -121,7 +121,8 @@ fresh seeds (1000-1002, 2000-2002; `evaluate_suite`, 66 simulations, no search).
 draft of this page used those, which are not the champions' seeds. No count
 below changes.) Held-out champions at or above 0.173: **A 0 of 5, B 5 of 5, C 1 of 5, D 1 of 5.** Most
 evolved champions in A, C and D are therefore *worse than the hand-designed
-quadruped* (they start from random creatures, not from it): 131 genomes is very little evolution.
+quadruped* (A starts from the reference body with a random controller, C and
+D from random creatures; none starts from the hand-designed gait): 131 genomes is very little evolution.
 
 ### The six primary tests
 
@@ -322,7 +323,7 @@ What the frames show (sheets rendered from the saved genomes on 2026-11-13,
 Effect on the headline: before dropping anyone the held-out medians rank B 0.327
 > D 0.120 > A 0.078 > C 0.058. Dropping every flagged champion (B0, B4, C2, C4
 for airborne; D3 also for lateral drift) gives A 0.078 (none flagged), B 0.442
-(B1, B2, B3), C 0.086 (C0, C1, C3) and D 0.129 (D0, D1, D2, D4), i.e. B > D > C
+(B1, B2, B3), C 0.086 (C0, C1, C3) and D 0.128 (D0, D1, D2, D4), i.e. B > D > C
 > A. **B stays first and D second; A and C swap places** (0.078 against 0.086).
 An earlier draft said the ordering did not change; that was wrong. The swap
 does not touch the primary conclusion: the A-C gap is 0.008 on a spread of
@@ -342,8 +343,9 @@ rationale for the friction 0.2 environment (`suites.py`, earlier draft) was
 that a gait that skates should break down on ice. What the data show, all
 post hoc and descriptive, over the 20 champions: mean fitness is 0.231 on mu 0.2,
 0.369 on mu 0.7 and 0.192 on mu 2.5. Ice is lower than mu 0.7 for 15 of 20
-champions (Wilcoxon p = 0.017), so low friction does cost the champions about a
-third relative to normal friction; it is not lower than mu 2.5 (9 of 20 lower,
+champions (Wilcoxon p = 0.017, uncorrected across these several post hoc comparisons),
+so low friction does cost the champions about a third relative to moderate
+friction (0.7; the default is 1.0); it is not lower than mu 2.5 (9 of 20 lower,
 p = 0.47). Against each champion's own held-out mean (0.173) ice is not
 distinguishable (8 of 20 lower, p = 0.26). An earlier draft of this page said
 champions score higher on ice than average and that the data "say the opposite"

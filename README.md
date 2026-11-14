@@ -213,7 +213,7 @@ What this shows and does not show:
   C (0.078 vs 0.086, within noise), and the primary conclusion is unchanged.
   All 20 champions slide while loaded. The held-out suite is dominated by
   slope and roughness and does not isolate grip: ice (mu 0.2) costs the
-  champions about a third compared with mu 0.7 (0.231 vs 0.369, post hoc) but
+  champions about a third compared with mu 0.7 (0.231 vs 0.369, post hoc, uncorrected) but
   is not below the held-out average (0.173)
   ([docs/RESULTS.md](docs/RESULTS.md)).
 
