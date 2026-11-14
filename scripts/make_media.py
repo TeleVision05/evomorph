@@ -267,7 +267,9 @@ def cmd_audit(args: argparse.Namespace) -> None:
                 tiles.append(frame)
             frames.append(np.empty(0))  # count only; frames are not kept
 
-        fit, m, _ = simulate_window(genome, cfg, 0.0, cfg.sim.duration, keep, size=(320, 240))
+        # t0 = 1 / FPS, not 0: the sink matches control steps counted from 1, so a
+        # target at step 0 would never match and no frame would ever be emitted.
+        fit, m, _ = simulate_window(genome, cfg, 1.0 / FPS, cfg.sim.duration, keep, size=(320, 240))
         vals = "  ".join(f"{k.replace('_fraction', '')} {m[k]:.2f}" for k in AUDIT_METRICS)
         text = f"{run_dir.name} {genome.id} {body_plan(genome)} flat fit {fit:+.2f}  {vals}"
         print(text)
