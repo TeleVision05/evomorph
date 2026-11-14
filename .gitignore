@@ -7,7 +7,7 @@ __pycache__/
 *.egg-info/
 build/
 dist/
-results/
+/results/
 .DS_Store
 MUJOCO_LOG.TXT
 # Dashboard render cache (made when the results folder is not results/)

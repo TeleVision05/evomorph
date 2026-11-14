@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "id": "b0005-001",
+  "parent_ids": [
+    "b0004-021"
+  ],
+  "generation": 5,
+  "origin": "mutation",
+  "morphology": {
+    "n_pairs": 2,
+    "n_segments": 2,
+    "torso_length": 0.7678014026118579,
+    "torso_width": 0.08440482813110906,
+    "torso_height": 0.14383793365646927,
+    "torso_mass_scale": 0.8066722502301085,
+    "upper_limb_length": 0.1769979346917727,
+    "lower_limb_length": 0.2983107781461325,
+    "limb_thickness": 0.020229978409229032,
+    "foot_radius": 0.034235779068557085,
+    "foot_length": 0.0041338669864602546,
+    "limb_mass_scale": 1.6302696630122098,
+    "hip_splay": 43.05146505754226,
+    "lower_splay": 41.43256157244099,
+    "hip_axis_tilt": 20.190009239988303,
+    "hip_range": 28.863908901691673,
+    "knee_range": 47.262869659507516
+  },
+  "controller": {
+    "kind": "cpg",
+    "gait": "metachronal",
+    "frequency": 1.388405063407249,
+    "hip_amplitude": 0.18310971660853467,
+    "knee_amplitude": 0.2171292205343323,
+    "knee_phase_offset": 1.5730876325059735,
+    "phase_offsets": [
+      -0.8439293314738392,
+      -0.046523925932398714,
+      1.2162996726247082,
+      1.2124346407701072
+    ],
+    "hip_bias": [
+      0.0,
+      0.0,
+      0.0,
+      0.01887208406391927
+    ],
+    "knee_bias": [
+      -0.03531250398539226,
+      0.0,
+      -0.009427185081430312,
+      -0.05583621872149058
+    ],
+    "params": []
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "schema": 1,
+  "id": "g0005-013",
+  "parent_ids": [
+    "g0003-004"
+  ],
+  "generation": 5,
+  "origin": "mutation",
+  "morphology": {
+    "n_pairs": 2,
+    "n_segments": 2,
+    "torso_length": 0.4,
+    "torso_width": 0.2,
+    "torso_height": 0.06,
+    "torso_mass_scale": 1.0,
+    "upper_limb_length": 0.14,
+    "lower_limb_length": 0.2,
+    "limb_thickness": 0.018,
+    "foot_radius": 0.025,
+    "foot_length": 0.0,
+    "limb_mass_scale": 1.0,
+    "hip_splay": 10.0,
+    "lower_splay": 60.0,
+    "hip_axis_tilt": 0.0,
+    "hip_range": 45.0,
+    "knee_range": 45.0
+  },
+  "controller": {
+    "kind": "cpg",
+    "gait": "metachronal",
+    "frequency": 0.9248021575508949,
+    "hip_amplitude": 0.30844507559266354,
+    "knee_amplitude": 0.22085420571527925,
+    "knee_phase_offset": 0.4495718557815511,
+    "phase_offsets": [
+      -0.12067067553226248,
+      0.043673235191843185,
+      0.4383417571192032,
+      0.38181173833875715
+    ],
+    "hip_bias": [
+      -0.2671532068899207,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "knee_bias": [
+      0.0,
+      0.0,
+      -0.14255305573701987,
+      0.0
+    ],
+    "params": []
+  }
+}

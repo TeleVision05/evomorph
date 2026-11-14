@@ -1,0 +1,1213 @@
+{
+  "type": "comparison",
+  "design_hash": "9ae4752f2ef32431",
+  "design": {
+    "experiment": {
+      "conditions": [
+        "controller",
+        "morphology",
+        "joint",
+        "joint_me"
+      ],
+      "budget": 1441,
+      "train_suite": "train",
+      "test_suite": "test",
+      "train_seed": 0,
+      "population_size": 24,
+      "rescore_seeds": 3,
+      "set_size": 10,
+      "set_seeds": 1
+    },
+    "runs": {
+      "controller": {
+        "sim": {
+          "duration": 10.0,
+          "timestep": 0.002,
+          "settle_time": 1.0,
+          "control_rate": 50.0,
+          "init_noise": 0.01,
+          "spawn_clearance": 0.005,
+          "fall_tilt_deg": 75.0,
+          "fall_contact_time": 0.25,
+          "fall_contact_window": 1.0,
+          "max_linear_speed": 5.0,
+          "max_speed_per_size": 10.0,
+          "max_angular_speed": 40.0,
+          "max_height_gain": 1.0,
+          "max_height_gain_per_size": 1.0,
+          "max_ground_penetration": 0.05,
+          "max_contact_penetration": 0.12
+        },
+        "fitness": {
+          "velocity_scale": 0.2,
+          "tilt_scale": 1.0472,
+          "lateral_ratio": 0.5,
+          "yaw_scale": 0.7,
+          "cot_scale": 2.0,
+          "slip_penalty": 0.5,
+          "airborne_allowance": 0.05,
+          "airborne_scale": 0.5,
+          "effort_scale": 0.5,
+          "smooth_scale": 3.0,
+          "still_distance": 0.1,
+          "w_progress": 1.0,
+          "w_upright": 1.0,
+          "w_lateral": 1.0,
+          "w_rotation": 1.0,
+          "w_energy": 1.0,
+          "w_slip": 1.0,
+          "w_support": 1.0,
+          "w_airborne": 1.0,
+          "w_effort": 1.0,
+          "w_smoothness": 1.0,
+          "w_fall": 1.0,
+          "w_still": 0.2,
+          "penalty_cap": 2.0
+        },
+        "evolution": {
+          "algorithm": "ga",
+          "mode": "controller",
+          "budget": 1441,
+          "frozen_body": "quadruped",
+          "frozen_controller": "quadruped",
+          "kind": "cpg",
+          "population_size": 24,
+          "elite_count": 2,
+          "tournament_size": 3,
+          "crossover_prob": 0.5,
+          "max_generations": null,
+          "mutation": {
+            "gene_rate": 0.12,
+            "sigma": 0.1,
+            "reset_rate": 0.02,
+            "p_limb_pairs": 0.05,
+            "p_segments": 0.05,
+            "p_gait": 0.05,
+            "p_phase": 0.2,
+            "phase_sigma": 0.25
+          },
+          "diversity": {
+            "method": "sharing",
+            "sharing_radius": 0.15,
+            "sharing_alpha": 1.0,
+            "plan_elites": 1,
+            "immigrant_fraction": 0.05
+          },
+          "evaluation": {
+            "aggregate": "mean",
+            "runs": [
+              {
+                "env": {
+                  "kind": "flat",
+                  "slope_deg": 0.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 0
+              },
+              {
+                "env": {
+                  "kind": "slope",
+                  "slope_deg": 5.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 1
+              },
+              {
+                "env": {
+                  "kind": "slope",
+                  "slope_deg": -5.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 2
+              },
+              {
+                "env": {
+                  "kind": "slope",
+                  "slope_deg": 10.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 3
+              },
+              {
+                "env": {
+                  "kind": "friction",
+                  "slope_deg": 0.0,
+                  "friction": 0.4,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 4
+              },
+              {
+                "env": {
+                  "kind": "friction",
+                  "slope_deg": 0.0,
+                  "friction": 1.6,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 5
+              },
+              {
+                "env": {
+                  "kind": "uneven",
+                  "slope_deg": 0.0,
+                  "friction": 1.0,
+                  "roughness": 0.02,
+                  "n_obstacles": 10,
+                  "seed": 1,
+                  "friction_spread": 1.0
+                },
+                "seed": 6
+              },
+              {
+                "env": {
+                  "kind": "uneven",
+                  "slope_deg": 0.0,
+                  "friction": 1.0,
+                  "roughness": 0.04,
+                  "n_obstacles": 20,
+                  "seed": 2,
+                  "friction_spread": 1.0
+                },
+                "seed": 7
+              },
+              {
+                "env": {
+                  "kind": "friction",
+                  "slope_deg": 0.0,
+                  "friction": 0.8,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 3,
+                  "friction_spread": 2.0
+                },
+                "seed": 8
+              },
+              {
+                "env": {
+                  "kind": "random",
+                  "slope_deg": 8.0,
+                  "friction": 0.8,
+                  "roughness": 0.03,
+                  "n_obstacles": 15,
+                  "seed": 4,
+                  "friction_spread": 2.0
+                },
+                "seed": 9
+              },
+              {
+                "env": {
+                  "kind": "random",
+                  "slope_deg": 8.0,
+                  "friction": 0.8,
+                  "roughness": 0.03,
+                  "n_obstacles": 15,
+                  "seed": 5,
+                  "friction_spread": 2.0
+                },
+                "seed": 10
+              }
+            ]
+          }
+        },
+        "map_elites": {
+          "batch_size": 24,
+          "init_size": 24,
+          "crossover_prob": 0.2,
+          "descriptors": [
+            "sustained_velocity",
+            "energy_efficiency"
+          ],
+          "bins": [
+            10,
+            10
+          ],
+          "ranges": [
+            [
+              0.0,
+              0.8
+            ],
+            [
+              0.0,
+              0.7
+            ]
+          ]
+        }
+      },
+      "morphology": {
+        "sim": {
+          "duration": 10.0,
+          "timestep": 0.002,
+          "settle_time": 1.0,
+          "control_rate": 50.0,
+          "init_noise": 0.01,
+          "spawn_clearance": 0.005,
+          "fall_tilt_deg": 75.0,
+          "fall_contact_time": 0.25,
+          "fall_contact_window": 1.0,
+          "max_linear_speed": 5.0,
+          "max_speed_per_size": 10.0,
+          "max_angular_speed": 40.0,
+          "max_height_gain": 1.0,
+          "max_height_gain_per_size": 1.0,
+          "max_ground_penetration": 0.05,
+          "max_contact_penetration": 0.12
+        },
+        "fitness": {
+          "velocity_scale": 0.2,
+          "tilt_scale": 1.0472,
+          "lateral_ratio": 0.5,
+          "yaw_scale": 0.7,
+          "cot_scale": 2.0,
+          "slip_penalty": 0.5,
+          "airborne_allowance": 0.05,
+          "airborne_scale": 0.5,
+          "effort_scale": 0.5,
+          "smooth_scale": 3.0,
+          "still_distance": 0.1,
+          "w_progress": 1.0,
+          "w_upright": 1.0,
+          "w_lateral": 1.0,
+          "w_rotation": 1.0,
+          "w_energy": 1.0,
+          "w_slip": 1.0,
+          "w_support": 1.0,
+          "w_airborne": 1.0,
+          "w_effort": 1.0,
+          "w_smoothness": 1.0,
+          "w_fall": 1.0,
+          "w_still": 0.2,
+          "penalty_cap": 2.0
+        },
+        "evolution": {
+          "algorithm": "ga",
+          "mode": "morphology",
+          "budget": 1441,
+          "frozen_body": "quadruped",
+          "frozen_controller": "quadruped",
+          "kind": "cpg",
+          "population_size": 24,
+          "elite_count": 2,
+          "tournament_size": 3,
+          "crossover_prob": 0.5,
+          "max_generations": null,
+          "mutation": {
+            "gene_rate": 0.12,
+            "sigma": 0.1,
+            "reset_rate": 0.02,
+            "p_limb_pairs": 0.05,
+            "p_segments": 0.05,
+            "p_gait": 0.05,
+            "p_phase": 0.2,
+            "phase_sigma": 0.25
+          },
+          "diversity": {
+            "method": "sharing",
+            "sharing_radius": 0.15,
+            "sharing_alpha": 1.0,
+            "plan_elites": 1,
+            "immigrant_fraction": 0.05
+          },
+          "evaluation": {
+            "aggregate": "mean",
+            "runs": [
+              {
+                "env": {
+                  "kind": "flat",
+                  "slope_deg": 0.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 0
+              },
+              {
+                "env": {
+                  "kind": "slope",
+                  "slope_deg": 5.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 1
+              },
+              {
+                "env": {
+                  "kind": "slope",
+                  "slope_deg": -5.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 2
+              },
+              {
+                "env": {
+                  "kind": "slope",
+                  "slope_deg": 10.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 3
+              },
+              {
+                "env": {
+                  "kind": "friction",
+                  "slope_deg": 0.0,
+                  "friction": 0.4,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 4
+              },
+              {
+                "env": {
+                  "kind": "friction",
+                  "slope_deg": 0.0,
+                  "friction": 1.6,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 5
+              },
+              {
+                "env": {
+                  "kind": "uneven",
+                  "slope_deg": 0.0,
+                  "friction": 1.0,
+                  "roughness": 0.02,
+                  "n_obstacles": 10,
+                  "seed": 1,
+                  "friction_spread": 1.0
+                },
+                "seed": 6
+              },
+              {
+                "env": {
+                  "kind": "uneven",
+                  "slope_deg": 0.0,
+                  "friction": 1.0,
+                  "roughness": 0.04,
+                  "n_obstacles": 20,
+                  "seed": 2,
+                  "friction_spread": 1.0
+                },
+                "seed": 7
+              },
+              {
+                "env": {
+                  "kind": "friction",
+                  "slope_deg": 0.0,
+                  "friction": 0.8,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 3,
+                  "friction_spread": 2.0
+                },
+                "seed": 8
+              },
+              {
+                "env": {
+                  "kind": "random",
+                  "slope_deg": 8.0,
+                  "friction": 0.8,
+                  "roughness": 0.03,
+                  "n_obstacles": 15,
+                  "seed": 4,
+                  "friction_spread": 2.0
+                },
+                "seed": 9
+              },
+              {
+                "env": {
+                  "kind": "random",
+                  "slope_deg": 8.0,
+                  "friction": 0.8,
+                  "roughness": 0.03,
+                  "n_obstacles": 15,
+                  "seed": 5,
+                  "friction_spread": 2.0
+                },
+                "seed": 10
+              }
+            ]
+          }
+        },
+        "map_elites": {
+          "batch_size": 24,
+          "init_size": 24,
+          "crossover_prob": 0.2,
+          "descriptors": [
+            "sustained_velocity",
+            "energy_efficiency"
+          ],
+          "bins": [
+            10,
+            10
+          ],
+          "ranges": [
+            [
+              0.0,
+              0.8
+            ],
+            [
+              0.0,
+              0.7
+            ]
+          ]
+        }
+      },
+      "joint": {
+        "sim": {
+          "duration": 10.0,
+          "timestep": 0.002,
+          "settle_time": 1.0,
+          "control_rate": 50.0,
+          "init_noise": 0.01,
+          "spawn_clearance": 0.005,
+          "fall_tilt_deg": 75.0,
+          "fall_contact_time": 0.25,
+          "fall_contact_window": 1.0,
+          "max_linear_speed": 5.0,
+          "max_speed_per_size": 10.0,
+          "max_angular_speed": 40.0,
+          "max_height_gain": 1.0,
+          "max_height_gain_per_size": 1.0,
+          "max_ground_penetration": 0.05,
+          "max_contact_penetration": 0.12
+        },
+        "fitness": {
+          "velocity_scale": 0.2,
+          "tilt_scale": 1.0472,
+          "lateral_ratio": 0.5,
+          "yaw_scale": 0.7,
+          "cot_scale": 2.0,
+          "slip_penalty": 0.5,
+          "airborne_allowance": 0.05,
+          "airborne_scale": 0.5,
+          "effort_scale": 0.5,
+          "smooth_scale": 3.0,
+          "still_distance": 0.1,
+          "w_progress": 1.0,
+          "w_upright": 1.0,
+          "w_lateral": 1.0,
+          "w_rotation": 1.0,
+          "w_energy": 1.0,
+          "w_slip": 1.0,
+          "w_support": 1.0,
+          "w_airborne": 1.0,
+          "w_effort": 1.0,
+          "w_smoothness": 1.0,
+          "w_fall": 1.0,
+          "w_still": 0.2,
+          "penalty_cap": 2.0
+        },
+        "evolution": {
+          "algorithm": "ga",
+          "mode": "joint",
+          "budget": 1441,
+          "frozen_body": "quadruped",
+          "frozen_controller": "quadruped",
+          "kind": "cpg",
+          "population_size": 24,
+          "elite_count": 2,
+          "tournament_size": 3,
+          "crossover_prob": 0.5,
+          "max_generations": null,
+          "mutation": {
+            "gene_rate": 0.12,
+            "sigma": 0.1,
+            "reset_rate": 0.02,
+            "p_limb_pairs": 0.05,
+            "p_segments": 0.05,
+            "p_gait": 0.05,
+            "p_phase": 0.2,
+            "phase_sigma": 0.25
+          },
+          "diversity": {
+            "method": "sharing",
+            "sharing_radius": 0.15,
+            "sharing_alpha": 1.0,
+            "plan_elites": 1,
+            "immigrant_fraction": 0.05
+          },
+          "evaluation": {
+            "aggregate": "mean",
+            "runs": [
+              {
+                "env": {
+                  "kind": "flat",
+                  "slope_deg": 0.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 0
+              },
+              {
+                "env": {
+                  "kind": "slope",
+                  "slope_deg": 5.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 1
+              },
+              {
+                "env": {
+                  "kind": "slope",
+                  "slope_deg": -5.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 2
+              },
+              {
+                "env": {
+                  "kind": "slope",
+                  "slope_deg": 10.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 3
+              },
+              {
+                "env": {
+                  "kind": "friction",
+                  "slope_deg": 0.0,
+                  "friction": 0.4,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 4
+              },
+              {
+                "env": {
+                  "kind": "friction",
+                  "slope_deg": 0.0,
+                  "friction": 1.6,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 5
+              },
+              {
+                "env": {
+                  "kind": "uneven",
+                  "slope_deg": 0.0,
+                  "friction": 1.0,
+                  "roughness": 0.02,
+                  "n_obstacles": 10,
+                  "seed": 1,
+                  "friction_spread": 1.0
+                },
+                "seed": 6
+              },
+              {
+                "env": {
+                  "kind": "uneven",
+                  "slope_deg": 0.0,
+                  "friction": 1.0,
+                  "roughness": 0.04,
+                  "n_obstacles": 20,
+                  "seed": 2,
+                  "friction_spread": 1.0
+                },
+                "seed": 7
+              },
+              {
+                "env": {
+                  "kind": "friction",
+                  "slope_deg": 0.0,
+                  "friction": 0.8,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 3,
+                  "friction_spread": 2.0
+                },
+                "seed": 8
+              },
+              {
+                "env": {
+                  "kind": "random",
+                  "slope_deg": 8.0,
+                  "friction": 0.8,
+                  "roughness": 0.03,
+                  "n_obstacles": 15,
+                  "seed": 4,
+                  "friction_spread": 2.0
+                },
+                "seed": 9
+              },
+              {
+                "env": {
+                  "kind": "random",
+                  "slope_deg": 8.0,
+                  "friction": 0.8,
+                  "roughness": 0.03,
+                  "n_obstacles": 15,
+                  "seed": 5,
+                  "friction_spread": 2.0
+                },
+                "seed": 10
+              }
+            ]
+          }
+        },
+        "map_elites": {
+          "batch_size": 24,
+          "init_size": 24,
+          "crossover_prob": 0.2,
+          "descriptors": [
+            "sustained_velocity",
+            "energy_efficiency"
+          ],
+          "bins": [
+            10,
+            10
+          ],
+          "ranges": [
+            [
+              0.0,
+              0.8
+            ],
+            [
+              0.0,
+              0.7
+            ]
+          ]
+        }
+      },
+      "joint_me": {
+        "sim": {
+          "duration": 10.0,
+          "timestep": 0.002,
+          "settle_time": 1.0,
+          "control_rate": 50.0,
+          "init_noise": 0.01,
+          "spawn_clearance": 0.005,
+          "fall_tilt_deg": 75.0,
+          "fall_contact_time": 0.25,
+          "fall_contact_window": 1.0,
+          "max_linear_speed": 5.0,
+          "max_speed_per_size": 10.0,
+          "max_angular_speed": 40.0,
+          "max_height_gain": 1.0,
+          "max_height_gain_per_size": 1.0,
+          "max_ground_penetration": 0.05,
+          "max_contact_penetration": 0.12
+        },
+        "fitness": {
+          "velocity_scale": 0.2,
+          "tilt_scale": 1.0472,
+          "lateral_ratio": 0.5,
+          "yaw_scale": 0.7,
+          "cot_scale": 2.0,
+          "slip_penalty": 0.5,
+          "airborne_allowance": 0.05,
+          "airborne_scale": 0.5,
+          "effort_scale": 0.5,
+          "smooth_scale": 3.0,
+          "still_distance": 0.1,
+          "w_progress": 1.0,
+          "w_upright": 1.0,
+          "w_lateral": 1.0,
+          "w_rotation": 1.0,
+          "w_energy": 1.0,
+          "w_slip": 1.0,
+          "w_support": 1.0,
+          "w_airborne": 1.0,
+          "w_effort": 1.0,
+          "w_smoothness": 1.0,
+          "w_fall": 1.0,
+          "w_still": 0.2,
+          "penalty_cap": 2.0
+        },
+        "evolution": {
+          "algorithm": "map_elites",
+          "mode": "joint",
+          "budget": 1441,
+          "frozen_body": "quadruped",
+          "frozen_controller": "quadruped",
+          "kind": "cpg",
+          "population_size": 24,
+          "elite_count": 2,
+          "tournament_size": 3,
+          "crossover_prob": 0.5,
+          "max_generations": null,
+          "mutation": {
+            "gene_rate": 0.12,
+            "sigma": 0.1,
+            "reset_rate": 0.02,
+            "p_limb_pairs": 0.05,
+            "p_segments": 0.05,
+            "p_gait": 0.05,
+            "p_phase": 0.2,
+            "phase_sigma": 0.25
+          },
+          "diversity": {
+            "method": "sharing",
+            "sharing_radius": 0.15,
+            "sharing_alpha": 1.0,
+            "plan_elites": 1,
+            "immigrant_fraction": 0.05
+          },
+          "evaluation": {
+            "aggregate": "mean",
+            "runs": [
+              {
+                "env": {
+                  "kind": "flat",
+                  "slope_deg": 0.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 0
+              },
+              {
+                "env": {
+                  "kind": "slope",
+                  "slope_deg": 5.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 1
+              },
+              {
+                "env": {
+                  "kind": "slope",
+                  "slope_deg": -5.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 2
+              },
+              {
+                "env": {
+                  "kind": "slope",
+                  "slope_deg": 10.0,
+                  "friction": 1.0,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 3
+              },
+              {
+                "env": {
+                  "kind": "friction",
+                  "slope_deg": 0.0,
+                  "friction": 0.4,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 4
+              },
+              {
+                "env": {
+                  "kind": "friction",
+                  "slope_deg": 0.0,
+                  "friction": 1.6,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 0,
+                  "friction_spread": 1.0
+                },
+                "seed": 5
+              },
+              {
+                "env": {
+                  "kind": "uneven",
+                  "slope_deg": 0.0,
+                  "friction": 1.0,
+                  "roughness": 0.02,
+                  "n_obstacles": 10,
+                  "seed": 1,
+                  "friction_spread": 1.0
+                },
+                "seed": 6
+              },
+              {
+                "env": {
+                  "kind": "uneven",
+                  "slope_deg": 0.0,
+                  "friction": 1.0,
+                  "roughness": 0.04,
+                  "n_obstacles": 20,
+                  "seed": 2,
+                  "friction_spread": 1.0
+                },
+                "seed": 7
+              },
+              {
+                "env": {
+                  "kind": "friction",
+                  "slope_deg": 0.0,
+                  "friction": 0.8,
+                  "roughness": 0.0,
+                  "n_obstacles": 0,
+                  "seed": 3,
+                  "friction_spread": 2.0
+                },
+                "seed": 8
+              },
+              {
+                "env": {
+                  "kind": "random",
+                  "slope_deg": 8.0,
+                  "friction": 0.8,
+                  "roughness": 0.03,
+                  "n_obstacles": 15,
+                  "seed": 4,
+                  "friction_spread": 2.0
+                },
+                "seed": 9
+              },
+              {
+                "env": {
+                  "kind": "random",
+                  "slope_deg": 8.0,
+                  "friction": 0.8,
+                  "roughness": 0.03,
+                  "n_obstacles": 15,
+                  "seed": 5,
+                  "friction_spread": 2.0
+                },
+                "seed": 10
+              }
+            ]
+          }
+        },
+        "map_elites": {
+          "batch_size": 24,
+          "init_size": 24,
+          "crossover_prob": 0.2,
+          "descriptors": [
+            "sustained_velocity",
+            "energy_efficiency"
+          ],
+          "bins": [
+            10,
+            10
+          ],
+          "ranges": [
+            [
+              0.0,
+              0.8
+            ],
+            [
+              0.0,
+              0.7
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "conditions": [
+    {
+      "key": "controller",
+      "letter": "A",
+      "label": "A controller-only",
+      "algorithm": "ga",
+      "mode": "controller"
+    },
+    {
+      "key": "morphology",
+      "letter": "B",
+      "label": "B morphology-only",
+      "algorithm": "ga",
+      "mode": "morphology"
+    },
+    {
+      "key": "joint",
+      "letter": "C",
+      "label": "C joint (GA)",
+      "algorithm": "ga",
+      "mode": "joint"
+    },
+    {
+      "key": "joint_me",
+      "letter": "D",
+      "label": "D joint (MAP-Elites)",
+      "algorithm": "map_elites",
+      "mode": "joint"
+    }
+  ],
+  "budget": 1441,
+  "sims_per_genome": 11,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "runs": {
+    "controller_s0": {
+      "condition": "controller",
+      "seed": 0,
+      "search_seconds": 241.7,
+      "sims_used": 1441,
+      "posthoc_seconds": 27.9,
+      "posthoc_sims": 264,
+      "finished": "2026-11-13T16:35:12+00:00"
+    },
+    "morphology_s0": {
+      "condition": "morphology",
+      "seed": 0,
+      "search_seconds": 432.5,
+      "sims_used": 1441,
+      "posthoc_seconds": 77.3,
+      "posthoc_sims": 264,
+      "finished": "2026-11-13T16:43:42+00:00"
+    },
+    "joint_s0": {
+      "condition": "joint",
+      "seed": 0,
+      "search_seconds": 299.0,
+      "sims_used": 1441,
+      "posthoc_seconds": 55.5,
+      "posthoc_sims": 264,
+      "finished": "2026-11-13T16:49:37+00:00"
+    },
+    "joint_me_s0": {
+      "condition": "joint_me",
+      "seed": 0,
+      "search_seconds": 262.8,
+      "sims_used": 1441,
+      "posthoc_seconds": 33.7,
+      "posthoc_sims": 264,
+      "finished": "2026-11-13T16:54:33+00:00"
+    },
+    "controller_s1": {
+      "condition": "controller",
+      "seed": 1,
+      "search_seconds": 195.6,
+      "sims_used": 1441,
+      "posthoc_seconds": 35.2,
+      "posthoc_sims": 242,
+      "finished": "2026-11-13T16:58:24+00:00"
+    },
+    "morphology_s1": {
+      "condition": "morphology",
+      "seed": 1,
+      "search_seconds": 634.1,
+      "sims_used": 1441,
+      "posthoc_seconds": 65.3,
+      "posthoc_sims": 264,
+      "finished": "2026-11-13T20:28:30+00:00"
+    },
+    "joint_s1": {
+      "condition": "joint",
+      "seed": 1,
+      "search_seconds": 390.8,
+      "sims_used": 1441,
+      "posthoc_seconds": 76.1,
+      "posthoc_sims": 264,
+      "finished": "2026-11-13T20:36:17+00:00"
+    },
+    "joint_me_s1": {
+      "condition": "joint_me",
+      "seed": 1,
+      "search_seconds": 481.5,
+      "sims_used": 1441,
+      "posthoc_seconds": 83.8,
+      "posthoc_sims": 264,
+      "finished": "2026-11-13T20:45:42+00:00"
+    },
+    "controller_s2": {
+      "condition": "controller",
+      "seed": 2,
+      "search_seconds": 311.8,
+      "sims_used": 1441,
+      "posthoc_seconds": 37.0,
+      "posthoc_sims": 242,
+      "finished": "2026-11-13T20:51:31+00:00"
+    },
+    "morphology_s2": {
+      "condition": "morphology",
+      "seed": 2,
+      "search_seconds": 216.8,
+      "sims_used": 1441,
+      "posthoc_seconds": 36.5,
+      "posthoc_sims": 264,
+      "finished": "2026-11-13T20:55:44+00:00"
+    },
+    "joint_s2": {
+      "condition": "joint",
+      "seed": 2,
+      "search_seconds": 200.2,
+      "sims_used": 1441,
+      "posthoc_seconds": 34.5,
+      "posthoc_sims": 264,
+      "finished": "2026-11-13T20:59:39+00:00"
+    },
+    "joint_me_s2": {
+      "condition": "joint_me",
+      "seed": 2,
+      "search_seconds": 200.6,
+      "sims_used": 1441,
+      "posthoc_seconds": 38.0,
+      "posthoc_sims": 264,
+      "finished": "2026-11-13T21:03:37+00:00"
+    },
+    "controller_s3": {
+      "condition": "controller",
+      "seed": 3,
+      "search_seconds": 177.5,
+      "sims_used": 1441,
+      "posthoc_seconds": 28.6,
+      "posthoc_sims": 242,
+      "finished": "2026-11-13T21:07:04+00:00"
+    },
+    "morphology_s3": {
+      "condition": "morphology",
+      "seed": 3,
+      "search_seconds": 103.8,
+      "sims_used": 1441,
+      "posthoc_seconds": 16.2,
+      "posthoc_sims": 242,
+      "finished": "2026-11-14T02:38:12+00:00"
+    },
+    "joint_s3": {
+      "condition": "joint",
+      "seed": 3,
+      "search_seconds": 135.3,
+      "sims_used": 1441,
+      "posthoc_seconds": 49.1,
+      "posthoc_sims": 264,
+      "finished": "2026-11-14T02:41:16+00:00"
+    },
+    "joint_me_s3": {
+      "condition": "joint_me",
+      "seed": 3,
+      "search_seconds": 150.7,
+      "sims_used": 1441,
+      "posthoc_seconds": 31.9,
+      "posthoc_sims": 264,
+      "finished": "2026-11-14T02:44:19+00:00"
+    },
+    "controller_s4": {
+      "condition": "controller",
+      "seed": 4,
+      "search_seconds": 107.1,
+      "sims_used": 1441,
+      "posthoc_seconds": 19.1,
+      "posthoc_sims": 264,
+      "finished": "2026-11-14T02:46:25+00:00"
+    },
+    "morphology_s4": {
+      "condition": "morphology",
+      "seed": 4,
+      "search_seconds": 106.6,
+      "sims_used": 1441,
+      "posthoc_seconds": 19.0,
+      "posthoc_sims": 264,
+      "finished": "2026-11-14T02:48:31+00:00"
+    },
+    "joint_s4": {
+      "condition": "joint",
+      "seed": 4,
+      "search_seconds": 236.9,
+      "sims_used": 1441,
+      "posthoc_seconds": 26.4,
+      "posthoc_sims": 264,
+      "finished": "2026-11-14T02:52:54+00:00"
+    },
+    "joint_me_s4": {
+      "condition": "joint_me",
+      "seed": 4,
+      "search_seconds": 156.0,
+      "sims_used": 1441,
+      "posthoc_seconds": 29.2,
+      "posthoc_sims": 264,
+      "finished": "2026-11-14T02:55:59+00:00"
+    }
+  },
+  "invocations": [
+    {
+      "command": "python -m evomorph experiment --type comparison --config configs/comparison.yaml",
+      "started": "2026-11-13T16:30:43+00:00",
+      "workers": 6
+    },
+    {
+      "command": "python -m evomorph experiment --type comparison --config configs/comparison.yaml --workers 4",
+      "started": "2026-11-13T20:16:50+00:00",
+      "workers": 4
+    },
+    {
+      "command": "python -m evomorph experiment --type comparison --config configs/comparison.yaml --workers 4",
+      "started": "2026-11-14T02:36:12+00:00",
+      "workers": 4,
+      "finished": "2026-11-14T02:56:00+00:00"
+    }
+  ],
+  "created": "2026-11-13T16:30:43+00:00",
+  "versions": {
+    "python": "3.12.13",
+    "mujoco": "4.0.1",
+    "git_commit": "4b61992"
+  }
+}
