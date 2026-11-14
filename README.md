@@ -190,7 +190,7 @@ line is worse on unseen terrain.*
 |---|---|---|---|---|
 | champion fitness, held-out terrain | 0.078 | **0.327** | 0.058 | 0.120 |
 | behavioural diversity, held-out (0-1) | 0.170 | 0.111 | 0.157 | 0.158 |
-| body plans in the final population | 1 | 8 | 8 | 4 |
+| body plans in the final population (set by the selection rule, not a result) | 1 | 8 | 8 | 4 |
 
 What this shows and does not show:
 
@@ -198,14 +198,20 @@ What this shows and does not show:
   shown.** No primary comparison is significant after Holm correction; C is
   behind B on robustness (A12 0.12, raw p 0.056, Holm p 0.33).
 - **It is not a result about the idea, but about a small budget.** 131 genomes
-  (about 5.5 generations) per run is far too little: most champions in A, C and
-  D are worse on held-out terrain than the hand-designed quadruped (0.181).
-  B's lead is largely its head start, because B keeps the hand-designed gait.
+  (6 to 9 generations) per run is far too little: most champions in A, C and
+  D are worse on held-out terrain than the hand-designed quadruped (0.173 on
+  the champions' seeds). B is a strong baseline with a head start: it keeps
+  the hand-designed gait, and its generation-0 best (0.08 to 0.79) is already
+  far above A's and C's (about 0 to 0.2), so most of its lead exists before any
+  search.
 - **Five seeds** can only call near-complete separation significant.
 - **Exploit check:** 4 of the 20 champions (B0, B4, C2, C4) spend over 20% of
   the time airborne and several skate; none tunnels, flies or loses foot
-  support. Removing the flagged ones does not change the ordering of the
-  conditions. All 20 champions slide while loaded (the known skating weakness).
+  support. Dropping the flagged ones keeps B first and D second but swaps A and
+  C (0.078 vs 0.086, within noise), and the primary conclusion is unchanged.
+  All 20 champions slide while loaded, and the held-out suite does not test
+  grip: champions score higher on ice (mu 0.2) than on average
+  ([docs/RESULTS.md](docs/RESULTS.md)).
 
 Earlier, smaller results:
 

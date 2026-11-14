@@ -8,8 +8,11 @@ terrain:
 * slope: train +5, -5, +10 deg; test +7.5 (between), +15 (steeper uphill),
   -12 (steeper downhill).
 * friction: train 0.4 and 1.6 (plus 1.0 on every other terrain); test 0.2
-  (lower), 0.7 (between), 2.5 (higher). 0.2 is ice-on-rubber territory, where a
-  gait that skates instead of planting its feet should break down.
+  (lower), 0.7 (between), 2.5 (higher). 0.2 is ice-on-rubber territory. It was
+  meant to punish gaits that skate, but the comparison experiment (2026-11-13,
+  docs/RESULTS.md) found it does not: the 20 champions score 0.231 on average
+  at 0.2 against 0.173 over the whole test suite, and faster gaits slide more
+  (slip against speed, Spearman +0.56). The suite does not test grip.
 * uneven: train roughness 0.02 m / 10 obstacles and 0.04 m / 20; test 0.03 m /
   15 (between) and 0.06 m / 30 (rougher, more cluttered).
 * friction patches: train 0.8 x/ 2 (0.4-1.6); test 0.6 x/ 3 (0.2-1.8).

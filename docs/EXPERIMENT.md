@@ -62,9 +62,14 @@ per-limb arrays. Diagonal is the standard alternating gait at every count: an
 alternating step for 2 limbs, a trot for 4, the alternating tripod for 6
 (diagonal equals tripod there), an alternating tetrapod for 8.
 
-Why it is fair: (1) it is the other half of the same reference creature, so A
-(reference body, evolved controller) and B (reference controller, evolved body)
-are mirror images; (2) it was fixed with the core, before any experiment, so
+Why it is a defensible baseline, and why it is NOT a symmetric one: (1) it is
+the other half of the same reference creature, so A (reference body, evolved
+controller) and B (reference controller, evolved body) are mirror images in
+construction. They are not mirror images in effect: B receives a tuned gait,
+A receives a body that does not help a random controller. The measured
+generation-0 best training fitness of B is 0.076, 0.618, 0.599, 0.785, 0.318
+(seeds 0-4) against 0.030, 0.058, 0.009, 0.007, -0.218 for A and 0.019, 0.196,
+0.013, -0.012, 0.062 for C, so B has a large head start (docs/RESULTS.md); (2) it was fixed with the core, before any experiment, so
 it was not tuned to make bodies look good or bad; (3) its amplitudes are
 angles, so a body that evolves longer legs gets a longer stride from it, which
 is exactly what B can exploit; (4) its limit is stated rather than hidden: one
@@ -269,7 +274,7 @@ measured search rate 3.89 sims/s (per run 2.50-6.88), post-hoc rate 3.99 sims/s,
 ```
 
 **The committed full design is 5 seeds x 1441 simulations (131 genomes,
-population 24, about 5.5 generations).** Five seeds because it is the fewest
+population 24; 6 to 9 generations in the full run, because the GA's protected individuals are not re-evaluated).** Five seeds because it is the fewest
 with which a primary comparison can pass the Holm correction at all (5 vs 5:
 smallest p 0.0079, x 6 = 0.048; 4 vs 4: 0.029, x 6 = 0.17), and then only with
 complete separation between conditions. The population was cut from the

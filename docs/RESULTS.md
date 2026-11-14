@@ -3,7 +3,7 @@
 **Short answer: the hypothesis is not shown.** Joint evolution of body and
 gait (condition C) did not beat controller-only evolution (A) or
 morphology-only evolution (B) on robustness or on behavioural diversity, and
-with 5 seeds per condition and about 5.5 generations of search per run the
+with 5 seeds per condition and only 131 genomes (6 to 9 generations) per run the
 experiment could not have shown a small effect. The best held-out champions
 came from **B, morphology-only**, which is also the only condition that
 started from a hand-designed gait. This page says exactly what was run, what
@@ -28,7 +28,7 @@ measures were fixed before the run ([EXPERIMENT.md](EXPERIMENT.md)).
 
 * **Seeds:** 5 per condition (search seeds 0-4), 20 runs.
 * **Equal budget, counted in simulations:** 1441 simulations per run = 131
-  genomes x 11 training environments (population 24, about 5.5 generations).
+  genomes x 11 training environments (population 24; 6 generations in A and D, 8-9 in B and C, because B and C carry protected individuals that are not re-evaluated each generation).
   Every run spent exactly 1441.
 * **Training suite** `train` (11 environments), **held-out suite** `test` (11
   other environments, unseen terrain seeds). Champions are re-scored with 3
@@ -110,11 +110,16 @@ every run: [`results.csv`](results/comparison/results.csv), tests:
 | champion failure rate, held-out | 0 | 0 | 0 | 0 |
 | **behavioural diversity, best-10 set, held-out** (primary) | 0.170 | 0.111 | 0.157 | 0.158 |
 | morphological diversity, final population | 0 (one body by design) | 0.281 | 0.308 | 0.221 |
-| body plans in the final population | 1 | 8 | 8 | 4 |
+| body plans in the final population (see note) | 1 | 8 | 8 | 4 |
 
-For scale: the hand-designed reference quadruped scores 0.357 on the training
-suite and 0.181 on the held-out suite ([TERRAINS.md](TERRAINS.md)). Held-out
-champions at or above 0.181: **A 0 of 5, B 5 of 5, C 1 of 5, D 1 of 5.** Most
+Note on the last row: it is not a finding. The selection rule protects the best individual of every body plan (`plan_elites: 1`), so B and C hold all 8 plans by construction once each has appeared, A has 1 because its body is frozen, and D has no such rule.
+
+For scale: the hand-designed reference quadruped scores 0.371 on the training
+suite and 0.173 on the held-out suite when re-scored on the champions' own
+fresh seeds (1000-1002, 2000-2002; `evaluate_suite`, 66 simulations, no search).
+([TERRAINS.md](TERRAINS.md) gives 0.357 / 0.181 on other seeds; an earlier
+draft of this page used those, which are not the champions' seeds. No count
+below changes.) Held-out champions at or above 0.173: **A 0 of 5, B 5 of 5, C 1 of 5, D 1 of 5.** Most
 evolved champions in A, C and D are therefore *worse than the creature the
 experiment started from*: 131 genomes is very little evolution.
 
@@ -149,7 +154,7 @@ near-complete separation could ever have been called significant.
 
 (Plan `NxM` = N limbs, M segments per limb.) Seed 1 of C (a six-legged
 metachronal walker, 0.356 held-out) is the best joint-evolution champion and is
-about equal to the second-best B champion; the spread between seeds inside a
+below the second-best B champion (0.442) and above the weakest (0.223); the spread between seeds inside a
 condition is as large as the spread between conditions for A, C and D.
 
 ### Figures
@@ -172,11 +177,11 @@ Also in `docs/results/comparison/plots/`: `body_plans.png`,
 
 ## What the evidence says, and what it does not
 
-**Supported by the data**
+**What the data supports (descriptive; none of the between-condition differences below is significant after Holm correction)**
 
 * B, the condition that evolves the body around a fixed, good gait, produced
   the best held-out champions at this budget: median 0.327, every seed above
-  the reference quadruped's 0.181. Its advantage over C is large in effect size
+  the reference quadruped's 0.173. Its advantage over C is large in effect size
   (A12 0.12, B better) but not significant after Holm correction (0.33).
 * Champions rarely fell on held-out terrain: the median failure rate is 0 in
   all four conditions (A0 fell in 2 of 33 runs, B1 in 3, C4 in 1; no other
@@ -185,8 +190,9 @@ Also in `docs/results/comparison/plots/`: `body_plans.png`,
   do worse on unseen terrain than on fresh seeds of the training terrain, and
   the winner's curse (selected vs fresh training fitness) is small except for
   B seed 2 (0.889 selected, 0.640 fresh) and B seed 3 (0.834, 0.761).
-* Body-plan diversity behaves as designed: A has one body, B and C reach all 8
-  plans, MAP-Elites keeps 3-4 (its archive holds only creatures that did not
+* Body-plan counts reflect the design, not a result: A has one body, B and C
+  hold all 8 plans because the selection rule protects one individual per
+  plan, and MAP-Elites keeps 3-4 (its archive holds only creatures that did not
   fall, and 10-21 of its 100 cells filled).
 
 **Not shown, and the reasons it may be a limit of this experiment rather than
@@ -195,19 +201,32 @@ a property of the idea**
 * **The hypothesis.** No evidence that joint evolution is more robust or more
   diverse. Also no evidence for the opposite: a non-significant result is not
   evidence of equality.
-* **The search is far too short.** 5.5 generations. In `docs/EVOLUTION.md` a
-  single flat-ground GA run found its best walker only after about 6000
-  simulations, four times this budget. Joint search spaces are bigger than
+* **The search is far too short.** 131 genomes, 6 to 9 generations. In
+  `docs/EVOLUTION.md` a single flat-ground GA run (3 simulations per genome,
+  6000 simulations = 2000 genomes, 51 generations of 48) found its best walker
+  only near the end: 4.2 times this budget in simulations and about 15 times
+  in genomes. Joint search spaces are bigger than
   controller-only or morphology-only spaces, so a fixed small budget is
   structurally unkind to C and D. Conditions A, C and D are largely still
   at the "random creature" stage (their generation-0 best is near 0 on the
   left of the fitness figure).
-* **B's head start.** B does not search for a gait at all; it inherits the
-  hand-designed one, which already scores 0.357 on training terrain. Its lead
-  in the figure exists from the first generation. The result says "with 131
-  genomes, mutating the body of a walker that already works beats searching
-  for a walker", not "evolving morphology alone is better than evolving
-  jointly". A longer run might reverse this; this experiment cannot say.
+* **B is a strong baseline with a head start; the comparison is not
+  symmetric.** B does not search for a gait; every B genome is driven by the
+  hand-designed one (the reference quadruped's own gait, which scores about
+  0.37 on training terrain on its own body). B's generation 0 is 24 *random
+  bodies* with that gait, not the reference body, and its best training
+  fitness there is already 0.076, 0.618, 0.599, 0.785, 0.318 (seeds 0-4); A's
+  is 0.030, 0.058, 0.009, 0.007, -0.218 and C's 0.019, 0.196, 0.013, -0.012,
+  0.062 (D's generation 0 is identical to C's, same random draws). B then
+  improves by only +0.05 to +0.33 (final 0.409, 0.931, 0.889, 0.834, 0.530),
+  so most of its lead over A, C and D is present before any search. A, with the
+  reference body but a random controller, does not get anywhere near the
+  hand-designed gait in 131 genomes (fresh-train median 0.196 against the
+  reference's 0.371). The result says "with 131 genomes, evolving bodies around
+  a good gait beats searching for a gait", not "evolving morphology alone is
+  better than evolving jointly". The earlier "mirror images" framing in
+  `docs/EXPERIMENT.md` and `baselines.py` was wrong and has been corrected. No
+  control (for example A seeded with the reference gait) was run.
 * **5 seeds.** Only near-complete separation can be significant, and the
   interval of every median is wide.
 * **Unpaired tests**, and a behaviour space (six descriptors and their ranges)
@@ -292,16 +311,45 @@ What the frames show (sheets rendered from the saved genomes on 2026-11-13,
 * **Slip is universal.** Mean slip fraction on held-out terrain is 0.34-0.91
   for every one of the 20 champions: all of them slide while loaded. This is the
   known skating weakness of the core, not a property of one condition.
+  Faster champions skate more (Spearman rho +0.56 between slip and speed
+  across the 20 champions, p 0.011, recomputed here from the 20 champions' posthoc records; slip against fitness -0.20,
+  p 0.40), and the slip factor `1 - 0.5 x slip` can cost at most half the
+  score.
 
-Effect on the headline: dropping every flagged champion (B0, B4, C2, C4 for
-airborne; D3 also for lateral drift) changes the held-out medians to A 0.078
-(none flagged), B 0.442 (B1, B2, B3), C 0.086 (C0, C1, C3) and D 0.129 (D0, D1,
-D2, D4). **The ordering of the conditions does not change**, so the
-exploit finding is reported as a finding about B0, B4, C2 and C4 and as a
-caveat on B's speed, not as a reason to discard the comparison.
+Effect on the headline: before dropping anyone the held-out medians rank B 0.327
+> D 0.120 > A 0.078 > C 0.058. Dropping every flagged champion (B0, B4, C2, C4
+for airborne; D3 also for lateral drift) gives A 0.078 (none flagged), B 0.442
+(B1, B2, B3), C 0.086 (C0, C1, C3) and D 0.129 (D0, D1, D2, D4), i.e. B > D > C
+> A. **B stays first and D second; A and C swap places** (0.078 against 0.086).
+An earlier draft said the ordering did not change; that was wrong. The swap
+does not touch the primary conclusion: the A-C gap is 0.008 on a spread of
+0.03-0.36 per condition, and a Mann-Whitney test of C (3 unflagged) against A
+(all 5) gives p = 0.57 (unadjusted, descriptive, run after seeing the data),
+while C against B (3 unflagged) gives p = 0.20. C beats neither A nor B with or
+without the flagged champions, so "not shown" stands, and the flagged champions
+are a caveat on B's speed rather than a reason to discard the comparison.
+
+## Limits of the held-out suite: grip is not tested
+
+The held-out suite varies slope, roughness, obstacles and friction, but it does
+not measure traction robustness, and the skating question was not answered.
+The design rationale for the friction 0.2 environment (`suites.py`, earlier
+draft) was that a gait that skates should break down on ice. The data say the
+opposite for these champions: the mean fitness of the 20 champions on
+`friction_mu0.2` is 0.231, above their all-held-out mean of 0.173, and 12 of
+the 20 score higher on mu 0.2 than on the held-out average (B4 runs 0.99 m/s
+there against 0.73 m/s overall, at slip 0.97). Slip is not penalised much
+(factor at most 0.5) and faster gaits slide more (rho +0.56 with speed). So
+"robustness" here means robustness to slope, roughness and clutter. Foot slide
+is real contact physics in every condition (the references skate too) and foot
+support is 1.00 for every champion, so the cross-condition comparison is not
+invalidated, but whether low friction makes skaters lose, which
+[TERRAINS.md](TERRAINS.md) deferred to this experiment, is not answered by it.
+The suites and scores were not changed.
 
 ## What was not done
 
+* No test of grip robustness (see above); no re-run with a suite where skating is penalised.
 * No run longer than 131 genomes. The experiment document recommends an
   overnight run (482 genomes per run) as the one to trust more; it was not
   made.

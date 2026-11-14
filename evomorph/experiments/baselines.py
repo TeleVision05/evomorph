@@ -33,12 +33,15 @@ tripod (diagonal equals tripod for 6 limbs) and an 8-limb alternating
 tetrapod. In each, every leg is in antiphase with its neighbours, so half the
 feet are down at any time.
 
-Why this is a fair baseline:
+Why this is a defensible baseline, and why it is not a symmetric one:
 
 1. It is the other half of the same reference creature. A freezes the
    reference body and evolves its controller; B freezes the reference
-   controller and evolves the body. Neither condition starts with an advantage
-   the other was denied.
+   controller and evolves the body. The construction is symmetric, the effect
+   is not: B gets a tuned gait that already walks random bodies (generation-0
+   best training fitness 0.08-0.79 over seeds 0-4 in the full run), while A
+   gets a body that cannot help a random controller (-0.22 to 0.06). B has a
+   large head start (docs/RESULTS.md, measured 2026-11-13).
 2. It was fixed before any experiment ran (it is the core's reference
    controller, written with the core), so it was not tuned to make bodies look
    good or bad.

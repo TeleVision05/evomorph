@@ -181,8 +181,9 @@ in the solver's contact list at mu 0.1 and 2.5). It is a property of the gait:
 its feet already slide on 72% of stance load at mu = 1. Its fitness drops more
 than its speed (0.450 at mu 1 against 0.335 at mu 0.3), because the slip factor
 charges the skating. Whether training across friction makes evolved skaters lose
-is a question for the evolution experiments; this run shows the terrain can
-express it.
+was left to the evolution experiments; the comparison experiment did not
+show it: its champions scored higher on mu 0.2 than on the held-out average
+(0.231 against 0.173; docs/RESULTS.md), so grip robustness is untested.
 
 **Rough ground and obstacles.** For roughness alone the result is **null over
 the train/test range**. Up to 0.08 m peak (RMS 1.4 cm), neither reference slows

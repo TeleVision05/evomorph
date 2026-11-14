@@ -312,7 +312,7 @@ def _parser() -> argparse.ArgumentParser:
     st.add_argument("--at", type=float, default=4.0)
     au = sub.add_parser("audit")
     au.add_argument("runs", type=Path, nargs="+")
-    au.add_argument("--out", type=Path, required=True)
+    au.add_argument("--out", type=Path, required=True, help="image file to write, e.g. audit.png")
     jp = sub.add_parser("jpeg")
     jp.add_argument("figure", type=Path)
     jp.add_argument("--out", type=Path, required=True)
@@ -328,8 +328,24 @@ COMMANDS: dict[str, Callable[[argparse.Namespace], None]] = {
 }
 
 
+def _check_out(ap: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    """Stop before any simulation when --out cannot be written as the file it must be."""
+    out = args.out
+    if args.cmd == "evolution":  # --out is the folder that receives the clip and poster
+        if out.exists() and not out.is_dir():
+            ap.error(f"--out {out} is a file; give a folder for the clip and its poster.")
+        return
+    if out.is_dir() or not out.suffix:
+        ap.error(
+            f"--out {out} must be an image file name such as {out.name or 'sheet'}.png, "
+            "not a folder."
+        )
+
+
 def main() -> None:
-    args = _parser().parse_args()
+    ap = _parser()
+    args = ap.parse_args()
+    _check_out(ap, args)
     COMMANDS[args.cmd](args)
 
 
