@@ -13,15 +13,18 @@ It was built to answer one question, and to be able to answer it with "no":
 > behaviourally diverse locomotion than evolving a controller for a fixed body?**
 
 **Status.** The engine, terrains, comparison experiment and dashboard are
-built and tested. The full comparison experiment (4 conditions x 5 seeds) has
-**not finished**, so this repository makes no claim yet about whether joint
-evolution beats the alternatives. What exists today is described under
-[Research results](#research-results).
+built and tested, and the full comparison experiment (4 conditions x 5 seeds)
+has finished. **Its answer is "not shown":** joint evolution did not beat the
+alternatives on robustness or behavioural diversity at this budget, and
+morphology-only evolution (which starts from a hand-designed gait) had the best
+held-out champions. See [Research results](#research-results) and
+[docs/RESULTS.md](docs/RESULTS.md).
 
-[![A quick-run GA champion walking](docs/media/evolution/ga_champion_sheet.png)](docs/media/evolution/ga_champion.mp4)
+[![Champions of a MAP-Elites run, generation 0 to the last, walking](docs/media/results/evolution.jpg)](docs/media/results/evolution.mp4)
 
-*One quick-run champion (single seed, `configs/quick.yaml`), re-simulated from
-its saved genome. Click for the clip.*
+*The champion of one MAP-Elites run (condition D, seed 2) at each generation
+where it changed, from the comparison experiment; 13 s, re-simulated offscreen
+from the saved genomes. Click for the clip.*
 
 ## Contents
 
@@ -172,16 +175,55 @@ reference creatures, never on evolved champions (`evomorph/simulation/fitness.py
 
 ## Research results
 
-What exists, and what it supports:
+The full comparison (conditions A controller-only, B morphology-only, C joint
+GA, D joint MAP-Elites; 5 seeds each; 1441 simulations per run; trained on 11
+terrains, tested on 11 held-out terrains) finished on 2026-11-13.
+Everything is in [docs/RESULTS.md](docs/RESULTS.md); the committed tables,
+champion genomes and plots are in [docs/results/comparison/](docs/results/comparison/).
+
+![Training against held-out fitness, one point per seed](docs/media/results/results_main.jpg)
+
+*Each point is one seed's champion, re-scored on fresh seeds. Below the dashed
+line is worse on unseen terrain.*
+
+| median over 5 seeds | A controller | B morphology | C joint GA | D joint MAP-Elites |
+|---|---|---|---|---|
+| champion fitness, held-out terrain | 0.078 | **0.327** | 0.058 | 0.120 |
+| behavioural diversity, held-out (0-1) | 0.170 | 0.111 | 0.157 | 0.158 |
+| body plans in the final population | 1 | 8 | 8 | 4 |
+
+What this shows and does not show:
+
+- **The hypothesis (C more robust and more diverse than A and B) is not
+  shown.** No primary comparison is significant after Holm correction; C is
+  behind B on robustness (A12 0.12, raw p 0.056, Holm p 0.33).
+- **It is not a result about the idea, but about a small budget.** 131 genomes
+  (about 5.5 generations) per run is far too little: most champions in A, C and
+  D are worse on held-out terrain than the hand-designed quadruped (0.181).
+  B's lead is largely its head start, because B keeps the hand-designed gait.
+- **Five seeds** can only call near-complete separation significant.
+- **Exploit check:** 4 of the 20 champions (B0, B4, C2, C4) spend over 20% of
+  the time airborne and several skate; none tunnels, flies or loses foot
+  support. Removing the flagged ones does not change the ordering of the
+  conditions. All 20 champions slide while loaded (the known skating weakness).
+
+Earlier, smaller results:
 
 | result | scale | where | what it shows |
 |---|---|---|---|
-| **Quick runs** (GA, MAP-Elites, GA without diversity) | 1 seed each, 6000 simulations, flat ground | [docs/EVOLUTION.md](docs/EVOLUTION.md) | The engine works: the GA's best fitness rose from +0.32 to +1.02 (about 0.65 m/s) and MAP-Elites filled 62% of its archive. One seed each, so no algorithm ranking; with diversity off the GA found the better walker on this seed. |
-| **Quick comparison** (conditions A-D) | 2 seeds x 4 conditions, 660 simulations per run | [docs/EXPERIMENT.md](docs/EXPERIMENT.md), `docs/media/experiment/quick/` | A smoke test of the pipeline. The computed verdict is "NOT SHOWN" (with 2 seeds the smallest possible p is 0.33). Most champions are worse than the hand-designed quadruped. |
-| **Terrain suites and reference creatures** | 300 random genomes plus two hand-built references | [docs/TERRAINS.md](docs/TERRAINS.md), `docs/validation/` | Calibration of the fitness and the terrain suites. |
-| **Full comparison** (5 seeds x 4 conditions, 1441 simulations per run) | planned 20 runs | `configs/comparison.yaml` | **Unfinished: no result is reported.** |
+| **Quick runs** (GA, MAP-Elites, GA without diversity) | 1 seed each, 6000 simulations, flat ground | [docs/EVOLUTION.md](docs/EVOLUTION.md) | The engine works: the GA's best fitness rose from +0.32 to +1.02 (about 0.65 m/s) and MAP-Elites filled 62% of its archive. One seed each, so no algorithm ranking. |
+| **Quick comparison** | 2 seeds x 4 conditions, 660 simulations per run | [docs/EXPERIMENT.md](docs/EXPERIMENT.md) | A smoke test of the pipeline. |
+| **Terrain suites and reference creatures** | 300 random genomes plus two hand-built references | [docs/TERRAINS.md](docs/TERRAINS.md) | Calibration of the fitness and the terrain suites. |
 
-All numbers above are from quick or partial runs and must be read as such.
+Media (offscreen renders of the real genomes, described in
+[docs/media/results/NOTES.md](docs/media/results/NOTES.md)):
+
+| MAP-Elites elites | Best morphology-only champion | Best joint champion |
+|---|---|---|
+| ![Nine elites from one archive](docs/media/results/elites_grid.jpg) | ![Condition B champion](docs/media/results/still_morphology_s1.jpg) | ![Condition C champion](docs/media/results/still_joint_s1.jpg) |
+
+To regenerate the raw run data (23 MB, not committed): `python -m evomorph
+experiment --type comparison` (see [Reproduce everything](#reproduce-everything)).
 
 
 ## Dashboard
@@ -209,9 +251,13 @@ The screenshots show two quick single-seed runs (`configs/quick.yaml`,
 
 ## Limits and known issues
 
-- **No conclusion on the research question yet.** The full comparison has not
-  finished; the quick comparison used 2 seeds and 60 genomes per run, far too
-  little search (see [docs/EXPERIMENT.md](docs/EXPERIMENT.md)).
+- **The research question is open.** The full comparison says "not shown", but
+  with 131 genomes per run and 5 seeds it could not have shown a modest effect;
+  the longer overnight run recommended in
+  [docs/EXPERIMENT.md](docs/EXPERIMENT.md) has not been made.
+- **B had a head start.** Morphology-only evolution keeps the hand-designed
+  gait, so its lead at this budget does not say that body evolution beats
+  joint evolution ([docs/RESULTS.md](docs/RESULTS.md)).
 - **Fast creatures skate.** The fitness charges foot slip, but the fastest
   evolved gaits still slide while loaded (docs/EVOLUTION.md, docs/EXPERIMENT.md).
 - **Reproducibility is per platform.** Runs are bit-identical across processes
@@ -232,7 +278,7 @@ The screenshots show two quick single-seed runs (`configs/quick.yaml`,
 .venv/bin/python -m evomorph evolve --config configs/quick.yaml             # quick GA run
 .venv/bin/python -m evomorph evolve --config configs/quick.yaml --algorithm map_elites
 .venv/bin/python -m evomorph experiment --type comparison --quick           # smoke-sized comparison (about 26 min measured)
-.venv/bin/python -m evomorph experiment --type comparison                   # the full design, many hours; re-run the same command to resume
+.venv/bin/python -m evomorph experiment --type comparison                   # the full design (about 100 min of run time here, 3 sessions); re-run the same command to resume
 .venv/bin/python -m evomorph analyze --run results/experiments/comparison
 ```
 
