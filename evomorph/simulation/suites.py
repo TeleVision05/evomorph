@@ -9,10 +9,12 @@ terrain:
   -12 (steeper downhill).
 * friction: train 0.4 and 1.6 (plus 1.0 on every other terrain); test 0.2
   (lower), 0.7 (between), 2.5 (higher). 0.2 is ice-on-rubber territory. It was
-  meant to punish gaits that skate, but the comparison experiment (2026-11-13,
-  docs/RESULTS.md) found it does not: the 20 champions score 0.231 on average
-  at 0.2 against 0.173 over the whole test suite, and faster gaits slide more
-  (slip against speed, Spearman +0.56). The suite does not test grip.
+  meant to punish gaits that skate. In the comparison experiment (2026-11-13,
+  docs/RESULTS.md; post hoc) the 20 champions average 0.231 at 0.2 against
+  0.369 at 0.7 (lower for 15 of 20), so low friction does cost something, but
+  0.231 is not below their held-out mean (0.173) because the suite is
+  dominated by slope and roughness, and faster gaits slide more (slip against
+  speed, Spearman +0.56). The suite is a weak test of grip.
 * uneven: train roughness 0.02 m / 10 obstacles and 0.04 m / 20; test 0.03 m /
   15 (between) and 0.06 m / 30 (rougher, more cluttered).
 * friction patches: train 0.8 x/ 2 (0.4-1.6); test 0.6 x/ 3 (0.2-1.8).

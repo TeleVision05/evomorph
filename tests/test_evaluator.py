@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+import os
 import pickle
 import time
 from dataclasses import replace
@@ -167,6 +168,11 @@ def test_small_random_sweep_has_no_crash_or_nan() -> None:
     assert np.median(np.abs(fwd)) < 0.5  # most random creatures barely move
 
 
+@pytest.mark.skipif(
+    bool(os.environ.get("CI")),
+    reason="local performance test: CPU time on shared CI runners varies 2-3x (0.21 s local, "
+    "0.57 s on one runner), so a fixed bound there only produces flaky failures",
+)
 def test_single_process_throughput() -> None:
     g = reference_hexapod()
     evaluate(g, sim=SimConfig(duration=1.0))  # warm-up

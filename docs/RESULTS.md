@@ -120,8 +120,8 @@ fresh seeds (1000-1002, 2000-2002; `evaluate_suite`, 66 simulations, no search).
 ([TERRAINS.md](TERRAINS.md) gives 0.357 / 0.181 on other seeds; an earlier
 draft of this page used those, which are not the champions' seeds. No count
 below changes.) Held-out champions at or above 0.173: **A 0 of 5, B 5 of 5, C 1 of 5, D 1 of 5.** Most
-evolved champions in A, C and D are therefore *worse than the creature the
-experiment started from*: 131 genomes is very little evolution.
+evolved champions in A, C and D are therefore *worse than the hand-designed
+quadruped* (they start from random creatures, not from it): 131 genomes is very little evolution.
 
 ### The six primary tests
 
@@ -219,7 +219,10 @@ a property of the idea**
   is 0.030, 0.058, 0.009, 0.007, -0.218 and C's 0.019, 0.196, 0.013, -0.012,
   0.062 (D's generation 0 is identical to C's, same random draws). B then
   improves by only +0.05 to +0.33 (final 0.409, 0.931, 0.889, 0.834, 0.530),
-  so most of its lead over A, C and D is present before any search. A, with the
+  so much of its lead over A, C and D probably exists before any search (an
+  inference: generation-0 best is a maximum over 24 scores, and no control was
+  run). For seed 0 B's generation 0 (0.076) is below C seed 1's (0.196); for
+  seeds 1-3 it is above 0.59. A, with the
   reference body but a random controller, does not get anywhere near the
   hand-designed gait in 131 genomes (fresh-train median 0.196 against the
   reference's 0.371). The result says "with 131 genomes, evolving bodies around
@@ -329,18 +332,26 @@ while C against B (3 unflagged) gives p = 0.20. C beats neither A nor B with or
 without the flagged champions, so "not shown" stands, and the flagged champions
 are a caveat on B's speed rather than a reason to discard the comparison.
 
-## Limits of the held-out suite: grip is not tested
+## Limits of the held-out suite: grip is only weakly tested
 
-The held-out suite varies slope, roughness, obstacles and friction, but it does
-not measure traction robustness, and the skating question was not answered.
-The design rationale for the friction 0.2 environment (`suites.py`, earlier
-draft) was that a gait that skates should break down on ice. The data say the
-opposite for these champions: the mean fitness of the 20 champions on
-`friction_mu0.2` is 0.231, above their all-held-out mean of 0.173, and 12 of
-the 20 score higher on mu 0.2 than on the held-out average (B4 runs 0.99 m/s
-there against 0.73 m/s overall, at slip 0.97). Slip is not penalised much
-(factor at most 0.5) and faster gaits slide more (rho +0.56 with speed). So
-"robustness" here means robustness to slope, roughness and clutter. Foot slide
+The held-out suite varies slope, roughness, obstacles and friction, but only 4
+of its 11 environments are mainly about friction (three friction levels and the patches), and the suite as a whole is
+dominated by slope and roughness (the hardest environments for the champions
+are `slope+15`, 0.068, and the 0.06 m / 30-obstacle field, -0.056). The design
+rationale for the friction 0.2 environment (`suites.py`, earlier draft) was
+that a gait that skates should break down on ice. What the data show, all
+post hoc and descriptive, over the 20 champions: mean fitness is 0.231 on mu 0.2,
+0.369 on mu 0.7 and 0.192 on mu 2.5. Ice is lower than mu 0.7 for 15 of 20
+champions (Wilcoxon p = 0.017), so low friction does cost the champions about a
+third relative to normal friction; it is not lower than mu 2.5 (9 of 20 lower,
+p = 0.47). Against each champion's own held-out mean (0.173) ice is not
+distinguishable (8 of 20 lower, p = 0.26). An earlier draft of this page said
+champions score higher on ice than average and that the data "say the opposite"
+of the rationale; that compared ice with a mean pulled down by very hard
+terrain and was too strong. Slip is not penalised much (factor at most 0.5) and
+faster gaits slide more (rho +0.56 with speed). So the suite is a weak test of
+grip: this experiment did not isolate skating (no matched control), and
+"robustness" mostly means robustness to slope, roughness and clutter. Foot slide
 is real contact physics in every condition (the references skate too) and foot
 support is 1.00 for every champion, so the cross-condition comparison is not
 invalidated, but whether low friction makes skaters lose, which
@@ -349,7 +360,7 @@ The suites and scores were not changed.
 
 ## What was not done
 
-* No test of grip robustness (see above); no re-run with a suite where skating is penalised.
+* No dedicated test of grip robustness (see above); no re-run with a suite where skating is penalised.
 * No run longer than 131 genomes. The experiment document recommends an
   overnight run (482 genomes per run) as the one to trust more; it was not
   made.

@@ -201,16 +201,20 @@ What this shows and does not show:
   (6 to 9 generations) per run is far too little: most champions in A, C and
   D are worse on held-out terrain than the hand-designed quadruped (0.173 on
   the champions' seeds). B is a strong baseline with a head start: it keeps
-  the hand-designed gait, and its generation-0 best (0.08 to 0.79) is already
-  far above A's and C's (about 0 to 0.2), so most of its lead exists before any
-  search.
+  the hand-designed gait, and its generation-0 best is 0.08, 0.62, 0.60, 0.79
+  and 0.32 over seeds 0-4. For 4 of 5 seeds that is above A's and C's
+  generation-0 bests (at most 0.20) and above most of their final bests, so
+  much of B's lead probably exists before any search (an inference: no control
+  such as A seeded with the reference gait was run).
 - **Five seeds** can only call near-complete separation significant.
 - **Exploit check:** 4 of the 20 champions (B0, B4, C2, C4) spend over 20% of
   the time airborne and several skate; none tunnels, flies or loses foot
   support. Dropping the flagged ones keeps B first and D second but swaps A and
   C (0.078 vs 0.086, within noise), and the primary conclusion is unchanged.
-  All 20 champions slide while loaded, and the held-out suite does not test
-  grip: champions score higher on ice (mu 0.2) than on average
+  All 20 champions slide while loaded. The held-out suite is dominated by
+  slope and roughness and does not isolate grip: ice (mu 0.2) costs the
+  champions about a third compared with mu 0.7 (0.231 vs 0.369, post hoc) but
+  is not below the held-out average (0.173)
   ([docs/RESULTS.md](docs/RESULTS.md)).
 
 Earlier, smaller results:

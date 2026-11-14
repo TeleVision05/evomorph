@@ -100,7 +100,8 @@ experiment:
   n_seeds: 5              # search seeds 0-4, the same for every condition
   seed_start: 0
   # Simulations per run. One genome costs 11 (every training environment once),
-  # so 1441 is 131 genomes, about 5.5 GA generations of 24. It is what fits
+  # so 1441 is 131 genomes (6-9 generations of 24 in the full run, because
+  # protected individuals are not re-evaluated). It is what fits
   # 4 conditions x 5 seeds into 2.5 h at the throughput measured in the quick
   # run (3.89 simulations/s with 6 workers on this shared laptop):
   #   scripts/plan_budget.py results/experiments/comparison_quick
@@ -110,7 +111,7 @@ experiment:
   train_suite: train      # 11 environments (evomorph/simulation/suites.py)
   test_suite: test        # 11 held-out environments, unseen terrain seeds
   train_seed: 0           # training environment i uses spawn seed 0 + i
-  population_size: 24      # small, so the small budget still gives ~5 generations
+  population_size: 24      # small, so the small budget still gives several (6-9) generations
   rescore_seeds: 3        # champion: 3 fresh spawn seeds x 11 environments per suite
   set_size: 10            # best 10 distinct genomes of the final population / archive
   set_seeds: 1            # set members: 1 fresh spawn seed x 11 environments per suite
